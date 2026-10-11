@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ranita 64 - Plataformas 3D (Estilo Conker)</title>
+  <link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+  <div id="canvas-container"></div>
+  <div class="crt-overlay" id="crt-screen"></div>
+
+  <!-- HUD Principal N64 / Rareware -->
+  <div id="hud">
+    <div style="display: flex; gap: 14px;">
+      <div class="hud-panel">
+        <span class="hud-icon">🐸</span>
+        <span id="hud-lives" class="rare-text">x 3</span>
+      </div>
+      <div class="hud-panel">
+        <span class="hud-icon">🪰</span>
+        <span id="hud-bugs" class="rare-text">0 / 20</span>
+      </div>
+    </div>
+    <div id="hud-altitude">ALT: 0m - Base del Tronco</div>
+  </div>
+
+  <!-- Barra de Vida del Jefe TALACORP -->
+  <div id="boss-health-container">
+    <div class="boss-title">TALACORP BUG-ZAPPER 3000</div>
+    <div id="boss-health-bar">
+      <div id="boss-health-fill"></div>
+    </div>
+  </div>
+
+  <!-- Bocadillo de Diálogo estilo Conker -->
+  <div id="n64-dialogue-box">
+    <div id="dialogue-speaker">RANITA</div>
+    <div id="dialogue-content">¡Croak! ¡Maldita corporación TALACORP, talaron mi árbol!</div>
+    <div class="dialogue-hint">[Presiona ESPACIO o ENTER para continuar]</div>
+  </div>
+
+  <!-- Guía de controles -->
+  <div id="controls-hint">
+    [WASD] Moverse &nbsp;|&nbsp; [ESPACIO] Cargar Salto &nbsp;|&nbsp; [E / Clic] Lengua (Balanceo / Comer)<br>
+    [Arrastrar Ratón / Q-E] Girar Cámara &nbsp;|&nbsp; [20 Bichos = +1 Vida]
+  </div>
+
+  <!-- Botones de utilidad -->
+  <div id="utility-buttons">
+    <button class="icon-btn" id="btn-audio">🔊 AUDIO: ON</button>
+    <button class="icon-btn" id="btn-crt">📺 CRT: ON</button>
+  </div>
+
+  <!-- Pantalla de Inicio / Intro -->
+  <div class="modal-screen" id="start-screen">
+    <h1 class="n64-logo">RANITA 64<br><span style="font-size: 16px; color: #2ecc71;">DEFENSA DEL BOSQUE</span></h1>
+    <div class="story-card">
+      <p style="margin-bottom: 12px; color: #f1c40f;">
+        “Eres pequeño, el mundo se inclina contra ti, y cada bicho que comes te da otra oportunidad de llegar a casa.”
+      </p>
+      <p>
+        La corporación <b>TALACORP</b> ha talado tu hogar ancestral y fumigado el pantano.
+        ¡Sube en espiral por el tronco gigante, esquiva las hojas inestables que se inclinan, balancéate con tu lengua y aplasta al <b>Robot Exterminador</b> en la cima!
+      </p>
+    </div>
+    <button class="btn-n64" id="btn-start">¡EMPEZAR AVENTURA!</button>
+  </div>
+
+  <!-- Pantalla de Game Over -->
+  <div class="modal-screen" id="game-over-screen" style="display: none;">
+    <h1 class="n64-logo" style="color: #e74c3c;">¡TE HAS QUEDADO<br>SIN VIDAS!</h1>
+    <div class="story-card">
+      El bosque necesita tu tenacidad. ¡Caza más bichos para recuperar vidas y cuida tus pasos en las hojas que se inclinan!
+    </div>
+    <button class="btn-n64 btn-restart" id="btn-restart">REINTENTAR NIVEL</button>
+  </div>
+
+  <!-- Pantalla de Victoria -->
+  <div class="modal-screen" id="victory-screen" style="display: none;">
+    <h1 class="n64-logo" style="color: #2ecc71;">¡VICTORIA!<br><span style="font-size: 16px; color: #f1c40f;">EL EXTERMINADOR HA CAÍDO</span></h1>
+    <div class="story-card">
+      ¡El robot Bug-Zapper 3000 ha estallado en mil pedazos!<br><br>
+      Desde la cima del tronco talado contemplas el horizonte. A lo lejos, entre la niebla del bosque, una silueta alada remonta el vuelo...<br><br>
+      <i>Próximamente: Nivel 2 - El Halcón contra las Sierras Mecánicas.</i>
+    </div>
+    <button class="btn-n64" id="btn-victory-restart">JUGAR DE NUEVO</button>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
