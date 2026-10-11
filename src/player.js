@@ -9,7 +9,8 @@ export class Player {
     this.mesh = new THREE.Group();
     
     // Físicas y movimiento
-    this.position = new THREE.Vector3(0, 2, 8);
+    this.position = new THREE.Vector3(0, 1.6, 11);
+    this.prevPosition = this.position.clone();
     this.velocity = new THREE.Vector3();
     this.speed = 10.5;
     this.jumpForce = 13.8;
@@ -35,10 +36,11 @@ export class Player {
     this.lives = 3;
     this.bugsEaten = 0;
     this.totalBugsForLife = 20;
-    this.lastCheckpoint = new THREE.Vector3(0, 2, 8);
+    this.lastCheckpoint = new THREE.Vector3(0, 1.6, 11);
     this.invulnerableTimer = 0;
 
     // Componentes visuales estilo Conker / N64
+    this.modelContainer = null;
     this.body = null;
     this.belly = null;
     this.eyes = [];
@@ -72,11 +74,16 @@ export class Player {
     const mouthMat = new THREE.MeshLambertMaterial({ color: 0xc23616, flatShading: true });
     const padMat = new THREE.MeshLambertMaterial({ color: 0xe1b12c, flatShading: true });
 
+    // Contenedor principal elevado a 0.60 para que la base de las patas coincida exactamente con y = 0
+    this.modelContainer = new THREE.Group();
+    this.modelContainer.position.y = 0.60;
+    this.mesh.add(this.modelContainer);
+
     // 1. Cuerpo rechoncho
     const bodyGeo = new THREE.DodecahedronGeometry(0.72, 1);
     this.body = new THREE.Mesh(bodyGeo, frogMat);
     this.body.scale.set(1.1, 0.85, 1.0);
-    this.mesh.add(this.body);
+    this.modelContainer.add(this.body);
 
     // Pancita amarilla prominente
     const bellyGeo = new THREE.SphereGeometry(0.52, 6, 6);
@@ -102,20 +109,20 @@ export class Player {
     [-0.38, 0.38].forEach(x => {
       const eyeBall = new THREE.Mesh(eyeGeo, eyeWhiteMat);
       eyeBall.position.set(x, 0.56, 0.26);
-      this.mesh.add(eyeBall);
+      this.modelContainer.add(eyeBall);
       this.eyes.push(eyeBall);
 
       // Párpados expresivos
       const eyelid = new THREE.Mesh(eyelidGeo, eyelidMat);
       eyelid.position.set(x, 0.58, 0.26);
       eyelid.rotation.x = -Math.PI / 2.8;
-      this.mesh.add(eyelid);
+      this.modelContainer.add(eyelid);
       this.eyelids.push(eyelid);
 
       // Pupila cómica
       const pupil = new THREE.Mesh(pupilGeo, pupilMat);
       pupil.position.set(x, 0.58, 0.57);
-      this.mesh.add(pupil);
+      this.modelContainer.add(pupil);
       this.pupils.push(pupil);
     });
 
@@ -123,7 +130,7 @@ export class Player {
     const mouthGeo = new THREE.BoxGeometry(0.72, 0.12, 0.4);
     this.mouth = new THREE.Mesh(mouthGeo, mouthMat);
     this.mouth.position.set(0, 0.05, 0.6);
-    this.mesh.add(this.mouth);
+    this.modelContainer.add(this.mouth);
 
     // Pequeña puntita de lengua rosa
     const tongueTip = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.06, 0.12), new THREE.MeshBasicMaterial({ color: 0xff4757 }));
@@ -153,7 +160,7 @@ export class Player {
       });
 
       legGroup.position.set(x, -0.2, -0.2);
-      this.mesh.add(legGroup);
+      this.modelContainer.add(legGroup);
       this.legs.push(legGroup);
     });
 
@@ -162,7 +169,7 @@ export class Player {
       const arm = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.48, 0.2), frogMat);
       arm.position.set(x, -0.2, 0.4);
       arm.rotation.x = -0.2;
-      this.mesh.add(arm);
+      this.modelContainer.add(arm);
       this.arms.push(arm);
     });
   }
@@ -208,11 +215,14 @@ export class Player {
 
     this.handleTongueActions(dt, input, anchors, bugs, boss, camera);
     this.handleCollisions(dt, platforms, camera);
+    this.mesh.position.copy(this.position);
     this.updateAnimation(dt, input);
     this.updateShadow(platforms);
   }
 
   handleMovement(dt, input) {
+    this.prevPosition.copy(this.position);
+
     const moveDir = new THREE.Vector3();
     if (input.keys.forward) moveDir.z -= 1;
     if (input.keys.backward) moveDir.z += 1;
@@ -238,7 +248,6 @@ export class Player {
     this.position.x += this.velocity.x * dt;
     this.position.y += this.velocity.y * dt;
     this.position.z += this.velocity.z * dt;
-    this.mesh.position.copy(this.position);
   }
 
   handleJump(dt, input, camera) {
@@ -361,7 +370,7 @@ export class Player {
   }
 
   findTongueTarget(anchors, bugs, boss) {
-    const headPos = this.position.clone().add(new THREE.Vector3(0, 0.4, 0));
+    const headPos = this.position.clone().add(new THREE.Vector3(0, 0.85, 0));
     const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.facingAngle);
 
     let closestBug = null;
@@ -430,6 +439,8 @@ export class Player {
   }
 
   handleTongueSwing(dt, input) {
+    this.prevPosition.copy(this.position);
+
     const toPlayer = this.position.clone().sub(this.tongueAnchorPos);
     toPlayer.normalize();
     this.position.copy(this.tongueAnchorPos).add(toPlayer.multiplyScalar(this.swingRopeLength));
@@ -460,7 +471,7 @@ export class Player {
 
   updateTongueMesh(start, target, progress) {
     this.tongueMesh.visible = true;
-    const mouthPos = start.clone().add(new THREE.Vector3(0, 0.1, 0));
+    const mouthPos = start.clone().add(new THREE.Vector3(0, 0.65, 0));
     const curEnd = mouthPos.clone().lerp(target, progress);
 
     const dist = mouthPos.distanceTo(curEnd);
@@ -475,44 +486,151 @@ export class Player {
   }
 
   handleCollisions(dt, platforms, camera) {
-    this.wasGrounded = this.isGrounded;
-    this.isGrounded = false;
-    const frogRadius = 0.55;
+    // 1. Colisión sólida contra el tronco central del árbol (cilindro cónico)
+    if (this.position.y < 40.2) {
+      const t = Math.min(Math.max(this.position.y / 40.0, 0), 1.0);
+      const trunkRadius = 10.5 - t * 2.0;
+      const distXZ = Math.hypot(this.position.x, this.position.z);
+      const minTrunkDist = trunkRadius + 0.45;
+      if (distXZ < minTrunkDist && distXZ > 0.001) {
+        const nx = this.position.x / distXZ;
+        const nz = this.position.z / distXZ;
+        this.position.x = nx * minTrunkDist;
+        this.position.z = nz * minTrunkDist;
 
+        const inwardVel = this.velocity.x * nx + this.velocity.z * nz;
+        if (inwardVel < 0) {
+          this.velocity.x -= inwardVel * nx;
+          this.velocity.z -= inwardVel * nz;
+        }
+      }
+    }
+
+    // 2. Colisión lateral y de techo contra plataformas con espesor
+    const bodyRadius = 0.42;
     platforms.forEach(p => {
-      const box = p.getBounds ? p.getBounds() : new THREE.Box3().setFromObject(p.mesh);
-      
+      const box = p.getBounds ? p.getBounds() : (p.box || (p.box = new THREE.Box3().setFromObject(p.mesh)));
+      if (box.isCylinder) return;
+
+      // Colisión lateral (bloquea caminar dentro de los escalones)
       if (
-        this.position.x >= box.min.x - frogRadius &&
-        this.position.x <= box.max.x + frogRadius &&
-        this.position.z >= box.min.z - frogRadius &&
-        this.position.z <= box.max.z + frogRadius
+        this.position.y < box.max.y - 0.12 &&
+        this.position.y + 1.15 > box.min.y &&
+        this.position.x >= box.min.x - bodyRadius &&
+        this.position.x <= box.max.x + bodyRadius &&
+        this.position.z >= box.min.z - bodyRadius &&
+        this.position.z <= box.max.z + bodyRadius
       ) {
-        const topY = box.max.y;
-        if (this.position.y >= topY - 0.4 && this.position.y <= topY + 0.6 && this.velocity.y <= 0) {
-          this.position.y = topY;
+        const pushLeft = (this.position.x + bodyRadius) - box.min.x;
+        const pushRight = box.max.x - (this.position.x - bodyRadius);
+        const pushFront = (this.position.z + bodyRadius) - box.min.z;
+        const pushBack = box.max.z - (this.position.z - bodyRadius);
+        const minPush = Math.min(pushLeft, pushRight, pushFront, pushBack);
 
-          // Impacto de aterrizaje
-          if (!this.wasGrounded && this.velocity.y < -5) {
-            audio.playLand();
-            this.squashStretch.set(1.3, 0.65, 1.3);
-            if (this.particles) {
-              this.particles.spawnDustPuff(this.position, 5);
-            }
-            if (camera && this.velocity.y < -15) {
-              camera.addTrauma(0.3);
-            }
-          }
+        if (minPush === pushLeft) {
+          this.position.x = box.min.x - bodyRadius;
+          if (this.velocity.x > 0) this.velocity.x = 0;
+        } else if (minPush === pushRight) {
+          this.position.x = box.max.x + bodyRadius;
+          if (this.velocity.x < 0) this.velocity.x = 0;
+        } else if (minPush === pushFront) {
+          this.position.z = box.min.z - bodyRadius;
+          if (this.velocity.z > 0) this.velocity.z = 0;
+        } else {
+          this.position.z = box.max.z + bodyRadius;
+          if (this.velocity.z < 0) this.velocity.z = 0;
+        }
+      }
 
-          this.velocity.y = 0;
-          this.isGrounded = true;
-
-          if (p.onFrogStep) {
-            p.onFrogStep(dt, this);
-          }
+      // Colisión de techo (bonk al saltar hacia el fondo de una plataforma superior)
+      if (this.velocity.y > 0) {
+        const headY = this.position.y + 1.2;
+        if (
+          headY >= box.min.y &&
+          headY <= box.min.y + 0.35 &&
+          this.position.x >= box.min.x - bodyRadius &&
+          this.position.x <= box.max.x + bodyRadius &&
+          this.position.z >= box.min.z - bodyRadius &&
+          this.position.z <= box.max.z + bodyRadius
+        ) {
+          this.position.y = box.min.y - 1.22;
+          this.velocity.y = -2.0;
+          audio.playLand();
         }
       }
     });
+
+    // 3. Apoyo y aterrizaje vertical sobre plataformas (Anti-tunneling swept check)
+    this.wasGrounded = this.isGrounded;
+    this.isGrounded = false;
+    const footRadius = 0.32;
+
+    let bestGroundY = -9999;
+    let bestPlatform = null;
+
+    platforms.forEach(p => {
+      if (p.isWalkable === false) return;
+
+      const box = p.getBounds ? p.getBounds() : (p.box || (p.box = new THREE.Box3().setFromObject(p.mesh)));
+      
+      let inFootprint = false;
+      if (box.isCylinder) {
+        const distCenter = Math.hypot(this.position.x - box.center.x, this.position.z - box.center.z);
+        inFootprint = distCenter <= box.radius + footRadius;
+      } else {
+        inFootprint = (
+          this.position.x >= box.min.x - footRadius &&
+          this.position.x <= box.max.x + footRadius &&
+          this.position.z >= box.min.z - footRadius &&
+          this.position.z <= box.max.z + footRadius
+        );
+      }
+
+      if (!inFootprint) return;
+
+      const topY = box.max.y;
+
+      const fellOntoPlatform = (
+        this.velocity.y <= 0 &&
+        this.prevPosition.y >= topY - 0.15 &&
+        this.position.y <= topY + 0.25
+      );
+
+      const walkingOnPlatform = (
+        this.wasGrounded &&
+        Math.abs(this.position.y - topY) < 0.35
+      );
+
+      if (fellOntoPlatform || walkingOnPlatform) {
+        if (topY > bestGroundY) {
+          bestGroundY = topY;
+          bestPlatform = p;
+        }
+      }
+    });
+
+    if (bestPlatform !== null) {
+      const previousVy = this.velocity.y;
+      this.position.y = bestGroundY;
+      this.velocity.y = 0;
+      this.isGrounded = true;
+
+      // Impacto de aterrizaje
+      if (!this.wasGrounded && previousVy < -4) {
+        audio.playLand();
+        this.squashStretch.set(1.3, 0.65, 1.3);
+        if (this.particles) {
+          this.particles.spawnDustPuff(this.position, 6);
+        }
+        if (camera && previousVy < -16) {
+          camera.addTrauma(0.35);
+        }
+      }
+
+      if (bestPlatform.onFrogStep) {
+        bestPlatform.onFrogStep(dt, this);
+      }
+    }
 
     if (this.position.y < -8) {
       this.respawnAtCheckpoint();
@@ -523,6 +641,7 @@ export class Player {
     this.lives--;
     audio.playHurt();
     this.position.copy(this.lastCheckpoint);
+    this.prevPosition.copy(this.lastCheckpoint);
     this.velocity.set(0, 0, 0);
     this.invulnerableTimer = 1.8;
     this.tongueState = 'idle';
@@ -574,16 +693,24 @@ export class Player {
 
   updateShadow(platforms) {
     let groundY = -999;
-    const checkRadius = 0.8;
+    const checkRadius = 0.55;
 
     platforms.forEach(p => {
-      const box = p.getBounds ? p.getBounds() : new THREE.Box3().setFromObject(p.mesh);
-      if (
-        this.position.x >= box.min.x - checkRadius &&
-        this.position.x <= box.max.x + checkRadius &&
-        this.position.z >= box.min.z - checkRadius &&
-        this.position.z <= box.max.z + checkRadius
-      ) {
+      const box = p.getBounds ? p.getBounds() : (p.box || (p.box = new THREE.Box3().setFromObject(p.mesh)));
+      let inFootprint = false;
+      if (box.isCylinder) {
+        const distCenter = Math.hypot(this.position.x - box.center.x, this.position.z - box.center.z);
+        inFootprint = distCenter <= box.radius + checkRadius;
+      } else {
+        inFootprint = (
+          this.position.x >= box.min.x - checkRadius &&
+          this.position.x <= box.max.x + checkRadius &&
+          this.position.z >= box.min.z - checkRadius &&
+          this.position.z <= box.max.z + checkRadius
+        );
+      }
+
+      if (inFootprint) {
         if (box.max.y <= this.position.y + 0.1 && box.max.y > groundY) {
           groundY = box.max.y;
         }

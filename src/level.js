@@ -3,6 +3,20 @@ import { Textures } from './textures.js';
 import { TiltingLeaf, SteppingLPlatform, HangingSwingPlatform, TongueAnchor } from './leaf.js';
 import { SwampFly, BarkBeetle, PatrolWasp } from './bugs.js';
 
+function createCylinderPlatform(mesh, radius, height) {
+  const box = new THREE.Box3();
+  const halfH = height * 0.5;
+  box.min.set(mesh.position.x - radius, mesh.position.y - halfH, mesh.position.z - radius);
+  box.max.set(mesh.position.x + radius, mesh.position.y + halfH, mesh.position.z + radius);
+  box.isCylinder = true;
+  box.radius = radius;
+  box.center = new THREE.Vector2(mesh.position.x, mesh.position.z);
+  return {
+    mesh,
+    getBounds: () => box
+  };
+}
+
 export class Level {
   constructor(scene) {
     this.scene = scene;
@@ -37,7 +51,12 @@ export class Level {
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -1;
     this.scene.add(ground);
-    this.platforms.push({ mesh: ground });
+
+    const groundBox = new THREE.Box3(
+      new THREE.Vector3(-80, -2, -80),
+      new THREE.Vector3(80, -1, 80)
+    );
+    this.platforms.push({ mesh: ground, getBounds: () => groundBox });
 
     // Agua pantanosa reflectante
     const waterGeo = new THREE.PlaneGeometry(150, 150);
@@ -85,7 +104,7 @@ export class Level {
     const topCap = new THREE.Mesh(topCapGeo, topCapMat);
     topCap.position.y = this.trunkHeight + 0.4;
     this.scene.add(topCap);
-    this.platforms.push({ mesh: topCap });
+    this.platforms.push(createCylinderPlatform(topCap, 8.5, 0.8));
   }
 
   buildOrganicVines() {
@@ -143,9 +162,9 @@ export class Level {
     );
     startMushroom.position.set(0, 1.2, 11);
     this.scene.add(startMushroom);
-    this.platforms.push({ mesh: startMushroom });
+    this.platforms.push(createCylinderPlatform(startMushroom, 3.8, 0.6));
 
-    this.checkpoints.push(new THREE.Vector3(0, 2.2, 11));
+    this.checkpoints.push(new THREE.Vector3(0, 1.6, 11));
 
     // 2. Tramo 1: Escalones con soporte en L (fieles a la maqueta)
     const stepConfigs = [
@@ -171,8 +190,8 @@ export class Level {
     );
     knot1.position.set(-10.8, 13.5, -4.5);
     this.scene.add(knot1);
-    this.platforms.push({ mesh: knot1 });
-    this.checkpoints.push(new THREE.Vector3(-10.8, 14.5, -4.5));
+    this.platforms.push(createCylinderPlatform(knot1, 3.3, 0.7));
+    this.checkpoints.push(new THREE.Vector3(-10.8, 14.0, -4.5));
 
     // 3. Tramo 2: Anillos de lengua y plataforma colgante
     const anchor1 = new TongueAnchor(this.scene, new THREE.Vector3(-7.0, 22.0, -9.0));
@@ -196,6 +215,11 @@ export class Level {
     );
     overheadBranch.position.set(8.5, 28.5, -7.5);
     this.scene.add(overheadBranch);
+    const branchBox = new THREE.Box3(
+      new THREE.Vector3(8.5 - 0.6, 28.5 - 0.4, -7.5 - 3.0),
+      new THREE.Vector3(8.5 + 0.6, 28.5 + 0.4, -7.5 + 3.0)
+    );
+    this.platforms.push({ mesh: overheadBranch, getBounds: () => branchBox });
 
     const anchor2 = new TongueAnchor(this.scene, new THREE.Vector3(11.0, 31.0, -1.0));
     this.anchors.push(anchor2);
@@ -207,8 +231,8 @@ export class Level {
     );
     knot2.position.set(11.5, 26.5, 2.5);
     this.scene.add(knot2);
-    this.platforms.push({ mesh: knot2 });
-    this.checkpoints.push(new THREE.Vector3(11.5, 27.5, 2.5));
+    this.platforms.push(createCylinderPlatform(knot2, 3.3, 0.7));
+    this.checkpoints.push(new THREE.Vector3(11.5, 27.0, 2.5));
 
     // 5. Tramo 3: Subida final
     const leaf3 = new TiltingLeaf(this.scene, new THREE.Vector3(10.2, 30.0, 7.5), { w: 3.4, d: 2.8, h: 0.3 }, 'right');
@@ -223,7 +247,7 @@ export class Level {
     this.platforms.push(finalStep);
 
     // Checkpoint 3: Cima
-    this.checkpoints.push(new THREE.Vector3(0, 41.5, 6.5));
+    this.checkpoints.push(new THREE.Vector3(0, 41.0, 6.5));
   }
 
   buildIndustrialDetails() {

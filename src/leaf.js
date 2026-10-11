@@ -131,7 +131,14 @@ export class TiltingLeaf {
   }
 
   getBounds() {
-    return new THREE.Box3().setFromObject(this.leafMesh);
+    if (!this.box) this.box = new THREE.Box3();
+    const px = this.position.x;
+    const py = this.position.y;
+    const pz = this.position.z;
+    const drop = this.state === 'tilted' ? Math.sin(this.currentTilt) * (this.size.d * 0.4) : 0;
+    this.box.min.set(px - this.size.w * 0.5, py - this.size.h * 0.5 - drop, pz - this.size.d * 0.5);
+    this.box.max.set(px + this.size.w * 0.5, py + this.size.h * 0.5 - drop * 0.5, pz + this.size.d * 0.5);
+    return this.box;
   }
 }
 
@@ -163,13 +170,19 @@ export class SteppingLPlatform {
     bracket.position.set(0, -0.7, -size.d * 0.3);
     this.mesh.add(bracket);
 
+    // Bounding box exacta y precalculada de la superficie pisable
+    this.box = new THREE.Box3(
+      new THREE.Vector3(this.position.x - size.w * 0.5, this.position.y - size.h * 0.5, this.position.z - size.d * 0.5),
+      new THREE.Vector3(this.position.x + size.w * 0.5, this.position.y + size.h * 0.5, this.position.z + size.d * 0.5)
+    );
+
     this.scene.add(this.mesh);
   }
 
   update(dt) {}
 
   getBounds() {
-    return new THREE.Box3().setFromObject(this.platMesh);
+    return this.box;
   }
 }
 
@@ -211,23 +224,33 @@ export class HangingSwingPlatform {
 
     this.swingAngle = 0;
     this.swingSpeed = 1.6;
+    this.deltaX = 0;
+    this.box = new THREE.Box3();
     this.scene.add(this.mesh);
   }
 
   onFrogStep(dt, frog) {
-    // Al pisar, balancea un poco más rápido
     this.swingAngle += dt * 3;
+    // Arrastrar a la rana con el balanceo horizontal de la plataforma
+    frog.position.x += this.deltaX;
   }
 
   update(dt) {
     this.swingAngle += dt * this.swingSpeed;
     const sway = Math.sin(this.swingAngle) * 0.8;
-    this.mesh.position.x = this.position.x + sway;
+    const nextX = this.position.x + sway;
+    this.deltaX = nextX - this.mesh.position.x;
+    this.mesh.position.x = nextX;
     this.platMesh.rotation.z = Math.cos(this.swingAngle) * 0.08;
   }
 
   getBounds() {
-    return new THREE.Box3().setFromObject(this.platMesh);
+    const px = this.mesh.position.x;
+    const py = this.mesh.position.y;
+    const pz = this.mesh.position.z;
+    this.box.min.set(px - this.size.w * 0.5, py - this.size.h * 0.5, pz - this.size.d * 0.5);
+    this.box.max.set(px + this.size.w * 0.5, py + this.size.h * 0.5, pz + this.size.d * 0.5);
+    return this.box;
   }
 }
 
