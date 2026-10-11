@@ -1,7 +1,7 @@
 {
-  "name": "ranita-64",
+  "name": "froggy-fight",
   "version": "1.0.0",
-  "description": "",
+  "description": "Froggy-Fight - 3D N64 platformer style game",
   "type": "module",
   "scripts": {
     "dev": "vite --host",

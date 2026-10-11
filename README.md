@@ -1,4 +1,4 @@
-# 🐸 FROGGY-FIGHT: Ranita 64 - Defensa del Bosque
+# 🐸 FROGGY-FIGHT - Defensa del Bosque
 
 Plataformas 3D en **Three.js** con estética de **Nintendo 64** al estilo *Conker's Bad Fur Day*.
 

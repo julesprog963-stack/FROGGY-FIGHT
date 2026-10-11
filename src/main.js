@@ -81,7 +81,7 @@ class Game {
       this.state = 'playing';
 
       this.hud.showDialogue(
-        'RANITA',
+        'FROGGY',
         '¡Croak! ¡Maldita corporación TALACORP, talaron mi árbol! ¡Subiré hasta la cima y les enseñaré quién manda!'
       );
     };
@@ -178,7 +178,7 @@ class Game {
         if (!this.dialogueTriggeredMid) {
           this.dialogueTriggeredMid = true;
           this.hud.showDialogue(
-            'RANITA',
+            'FROGGY',
             '¡Uff, tuberías de veneno! Debo tener cuidado con las hojas que tiemblan... ¡y comer moscas para ganar vidas!'
           );
         }
