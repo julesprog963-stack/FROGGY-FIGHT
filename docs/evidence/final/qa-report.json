@@ -1,0 +1,765 @@
+{
+  "browser": "Playwright Chromium; Browser plugin unavailable",
+  "url": "http://127.0.0.1:4173/",
+  "desktop": {
+    "identity": {
+      "status": 200,
+      "url": "http://127.0.0.1:4173/",
+      "title": "El Ascenso de Frogbert - Plataformas 3D (Estilo N64)",
+      "startText": "🎮 ¡INICIAR AVENTURA!"
+    },
+    "layout": {
+      "inner": [
+        1440,
+        900
+      ],
+      "document": [
+        1440,
+        900
+      ],
+      "canvas": [
+        0,
+        0,
+        1440,
+        900
+      ],
+      "rendererCss": [
+        1440,
+        900
+      ],
+      "rendererLogical": [
+        1440,
+        900
+      ]
+    },
+    "menu": "/home/itadmin/Escritorio/FROGGY-FIGHT-EVIDENCIA/after/final/desktop-menu.png",
+    "introBanners": {
+      "meshCount": 6,
+      "visibleCount": 2,
+      "banners": [
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": false,
+          "ndc": [
+            -0.07513529656841728,
+            -1.61117938444554,
+            0.9895957410360047
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        },
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": false,
+          "ndc": [
+            1.0528542795521387,
+            -2.2001509420890053,
+            0.985829079456018
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        },
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": true,
+          "ndc": [
+            -0.028709723015766086,
+            -0.41807569477452616,
+            0.9915057174192908
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        },
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": true,
+          "ndc": [
+            0.9141014782025947,
+            -0.014624401973301731,
+            0.9900591443373874
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        },
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": false,
+          "ndc": [
+            -0.12875486285002605,
+            1.2800888776949595,
+            0.9521147370839821
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        },
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": false,
+          "ndc": [
+            2.2390092933346692,
+            1.7398511468391296,
+            0.9196543077365674
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        }
+      ]
+    },
+    "intro": "/home/itadmin/Escritorio/FROGGY-FIGHT-EVIDENCIA/after/final/desktop-intro.png",
+    "runtimeBanners": {
+      "meshCount": 4,
+      "visibleCount": 0,
+      "banners": [
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": false,
+          "ndc": [
+            -1.0120449051904596,
+            0.6645926230231619,
+            0.975959824449709
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        },
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": false,
+          "ndc": [
+            1.0430163757213502,
+            0.8829418811283304,
+            0.9751891315794964
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        },
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": false,
+          "ndc": [
+            -0.9369606632927016,
+            2.3085451722794352,
+            0.9824912763634314
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        },
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": false,
+          "ndc": [
+            0.5510880507819467,
+            2.956422540309334,
+            0.9846876061861057
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        }
+      ]
+    },
+    "after": "/home/itadmin/Escritorio/FROGGY-FIGHT-EVIDENCIA/after/final/desktop-after.png",
+    "tongue": {
+      "utilityCallsBefore": 0,
+      "utilityCallsAfter": 0,
+      "callsAfterE": 1,
+      "stateAfterE": "retracting"
+    },
+    "keyboardMovement": {
+      "start": [
+        0,
+        1.5,
+        11
+      ],
+      "held": [
+        0.84,
+        1.5,
+        11
+      ],
+      "rightWhileHeld": true
+    },
+    "camera": {
+      "yaw0": 0,
+      "yawAfterQ": 0.19792639999999995,
+      "yawAfterR": -0.03353189898240002
+    },
+    "chargeVisible": true,
+    "chargePercent": "69",
+    "chargeScreenshot": "/home/itadmin/Escritorio/FROGGY-FIGHT-EVIDENCIA/after/final/desktop-charge.png",
+    "jump": {
+      "before": [
+        4.586084502643014,
+        0.8855999999999999,
+        10.851456749064456
+      ],
+      "after": [
+        4.997994199151474,
+        0.025600000000000067,
+        10.835123320021927
+      ],
+      "charging": true,
+      "chargeTime": 0.08
+    },
+    "afterJump": "/home/itadmin/Escritorio/FROGGY-FIGHT-EVIDENCIA/after/final/desktop-after-jump.png",
+    "blurRelease": {
+      "rightBeforeBlur": true,
+      "rightAfterBlur": false,
+      "method": "window blur event dispatched in page"
+    },
+    "layoutAfter": {
+      "inner": [
+        1440,
+        900
+      ],
+      "document": [
+        1440,
+        900
+      ],
+      "canvas": [
+        0,
+        0,
+        1440,
+        900
+      ],
+      "rendererCss": [
+        1440,
+        900
+      ],
+      "rendererLogical": [
+        1440,
+        900
+      ]
+    },
+    "video": "/home/itadmin/Escritorio/FROGGY-FIGHT-EVIDENCIA/after/final/desktop-after.webm"
+  },
+  "mobile": {
+    "identity": {
+      "status": 200,
+      "url": "http://127.0.0.1:4173/",
+      "title": "El Ascenso de Frogbert - Plataformas 3D (Estilo N64)"
+    },
+    "introBanners": {
+      "meshCount": 6,
+      "visibleCount": 1,
+      "banners": [
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": false,
+          "ndc": [
+            -0.26016078073330945,
+            -1.61117938444554,
+            0.9895957410360047
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        },
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": false,
+          "ndc": [
+            3.6455754336082262,
+            -2.2001509420890053,
+            0.985829079456018
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        },
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": true,
+          "ndc": [
+            -0.09940925630895006,
+            -0.41807569477452616,
+            0.9915057174192908
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        },
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": false,
+          "ndc": [
+            3.165134964525087,
+            -0.014624401973301731,
+            0.9900591443373874
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        },
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": false,
+          "ndc": [
+            -0.44582196613506453,
+            1.2800888776949595,
+            0.9521147370839821
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        },
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": false,
+          "ndc": [
+            7.752713204408046,
+            1.7398511468391296,
+            0.9196543077365674
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        }
+      ]
+    },
+    "intro": "/home/itadmin/Escritorio/FROGGY-FIGHT-EVIDENCIA/after/final/mobile-intro.png",
+    "layoutPortrait": {
+      "inner": [
+        390,
+        844
+      ],
+      "document": [
+        390,
+        844
+      ],
+      "canvas": [
+        0,
+        0,
+        390,
+        844
+      ],
+      "rendererCss": [
+        390,
+        844
+      ],
+      "rendererLogical": [
+        390,
+        844
+      ]
+    },
+    "overlaysPortrait": {
+      "#hud > div:first-child": {
+        "visible": true,
+        "x": 8,
+        "y": 8,
+        "width": 279.046875,
+        "height": 40,
+        "right": 287.046875,
+        "bottom": 48
+      },
+      "#hud-altitude": {
+        "visible": true,
+        "x": 162,
+        "y": 56,
+        "width": 220,
+        "height": 28,
+        "right": 382,
+        "bottom": 84
+      },
+      "#utility-buttons": {
+        "visible": true,
+        "x": 266.515625,
+        "y": 88,
+        "width": 115.484375,
+        "height": 94,
+        "right": 382,
+        "bottom": 182
+      },
+      "#touch-controls": {
+        "visible": true,
+        "x": 8,
+        "y": 696,
+        "width": 374,
+        "height": 138,
+        "right": 382,
+        "bottom": 834
+      },
+      "#jump-charge": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "#n64-dialogue-box": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "#controls-hint": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "overlaps": []
+    },
+    "touchControlsVisible": true,
+    "runtimeBanners": {
+      "meshCount": 4,
+      "visibleCount": 0,
+      "banners": [
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": false,
+          "ndc": [
+            -3.505059967170844,
+            0.664719517796134,
+            0.975954149874138
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        },
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": false,
+          "ndc": [
+            3.6123355322438404,
+            0.8831226880025601,
+            0.975183206458451
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        },
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": false,
+          "ndc": [
+            -3.244710681750983,
+            2.3088064867311777,
+            0.9824888368187102
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        },
+        {
+          "name": "pato-lemus-banner",
+          "textureCanvas": true,
+          "size": [
+            256,
+            512
+          ],
+          "inViewport": false,
+          "ndc": [
+            1.9083630178335844,
+            2.9566630621390853,
+            0.9846860080436435
+          ],
+          "colors": {
+            "unique": 15219,
+            "white": 3129,
+            "orange": 7012,
+            "dark": 3099
+          }
+        }
+      ]
+    },
+    "afterPortrait": "/home/itadmin/Escritorio/FROGGY-FIGHT-EVIDENCIA/after/final/mobile-portrait-after.png",
+    "lateralTouch": {
+      "before": [
+        0,
+        1.5,
+        11
+      ],
+      "during": [
+        2.254750911369626,
+        1.5,
+        10.916523469765492
+      ],
+      "afterRelease": [
+        6.084984475317849,
+        -1,
+        9.98746895538468
+      ],
+      "held": true
+    },
+    "chargeVisible": true,
+    "chargePercent": "100",
+    "chargeScreenshot": "/home/itadmin/Escritorio/FROGGY-FIGHT-EVIDENCIA/after/final/mobile-charge.png",
+    "jump": {
+      "duringCharge": [
+        7.020076816547805,
+        -1,
+        9.71384495724738
+      ],
+      "afterRelease": [
+        7.087051670182196,
+        2.6360427200125627,
+        9.694246970590793
+      ],
+      "charging": true,
+      "chargeTime": 0.23119999999925495
+    },
+    "layoutLandscape": {
+      "inner": [
+        844,
+        390
+      ],
+      "document": [
+        844,
+        390
+      ],
+      "canvas": [
+        0,
+        0,
+        844,
+        390
+      ],
+      "rendererCss": [
+        844,
+        390
+      ],
+      "rendererLogical": [
+        844,
+        390
+      ]
+    },
+    "overlaysLandscape": {
+      "#hud > div:first-child": {
+        "visible": true,
+        "x": 18,
+        "y": 18,
+        "width": 313.046875,
+        "height": 40,
+        "right": 331.046875,
+        "bottom": 58
+      },
+      "#hud-altitude": {
+        "visible": true,
+        "x": 487.984375,
+        "y": 18,
+        "width": 338.015625,
+        "height": 38,
+        "right": 826,
+        "bottom": 56
+      },
+      "#utility-buttons": {
+        "visible": true,
+        "x": 536.53125,
+        "y": 58,
+        "width": 299.46875,
+        "height": 44,
+        "right": 836,
+        "bottom": 102
+      },
+      "#touch-controls": {
+        "visible": true,
+        "x": 8,
+        "y": 242,
+        "width": 828,
+        "height": 138,
+        "right": 836,
+        "bottom": 380
+      },
+      "#jump-charge": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "#n64-dialogue-box": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "#controls-hint": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "overlaps": []
+    },
+    "touchControlsLandscapeVisible": true,
+    "afterLandscape": "/home/itadmin/Escritorio/FROGGY-FIGHT-EVIDENCIA/after/final/mobile-landscape-after.png"
+  },
+  "errors": [],
+  "httpErrors": [],
+  "pass": true
+}

@@ -1,0 +1,441 @@
+{
+  "captured_utc_date": "2026-10-12",
+  "evidence_root": "/home/itadmin/Escritorio/FROGGY-FIGHT-EVIDENCIA",
+  "purpose": "Historical baseline gameplay capture before product code or image integration; final integrated QA is recorded under after.final.",
+  "local_build": {
+    "path": "/home/itadmin/Escritorio/FROGGY-FIGHT-BUILD",
+    "entrypoint": "index.html",
+    "title": "El Ascenso de Frogbert - Plataformas 3D (Estilo N64)",
+    "git_repository": false,
+    "source_modules_present": false,
+    "http_url": "http://127.0.0.1:8765/",
+    "http_status": 200,
+    "active_js": "assets/index-BbWLLh-8.js",
+    "active_css": "assets/index-2h1lI580.css"
+  },
+  "browser": {
+    "node": "v22.23.1",
+    "npm": "10.9.2",
+    "playwright_node_module": "1.63.0",
+    "playwright_cli": "1.62.1",
+    "chromium_binary": "/home/itadmin/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome",
+    "system_ffmpeg_available": false,
+    "playwright_ffmpeg": "/home/itadmin/.cache/ms-playwright/ffmpeg-1011/ffmpeg-linux"
+  },
+  "remote": {
+    "repository": "https://github.com/julesprog963-stack/FROGGY-FIGHT",
+    "branch": "main",
+    "commit": "41abecf7f097c2ab5861e61bcc7346c27bb399f5",
+    "public_site": "https://julesprog963-stack.github.io/FROGGY-FIGHT/",
+    "public_site_http_status": 200,
+    "active_html_js_css_byte_identical_to_local": true,
+    "sha256_local_and_public_assets": {
+      "/home/itadmin/Escritorio/FROGGY-FIGHT-BUILD/index.html": "5848753d3a20a00e7b2d02b616937db7d2f55616b76002e646a13cc18c6943a7",
+      "/home/itadmin/Escritorio/FROGGY-FIGHT-BUILD/assets/index-BbWLLh-8.js": "14e6a0c1bf1f83d7f5a97f0675a04d36b620ac9162a34fb7679cd93920c5fb66",
+      "/home/itadmin/Escritorio/FROGGY-FIGHT-BUILD/assets/index-2h1lI580.css": "55c34a7c5061f5afee3b86e014fa4148f666fe560fcdba742e759a3b780c16a6"
+    },
+    "editable_source_files": [
+      "src/main.js",
+      "src/player.js",
+      "src/level.js",
+      "src/camera.js",
+      "src/input.js",
+      "src/hud.js",
+      "src/textures.js",
+      "src/leaf.js",
+      "src/bugs.js",
+      "src/boss.js",
+      "src/npc.js",
+      "src/particles.js",
+      "src/audio.js",
+      "src/style.css",
+      "index.html",
+      "package.json"
+    ]
+  },
+  "clips": [
+    {
+      "file": "clips/01-menu-to-play.webm",
+      "duration_seconds": 12.44,
+      "bytes": 1052095,
+      "scene": "Menú, inicio, omitir cinemática y primera escena 3D.",
+      "actions": "Click en INICIAR AVENTURA; click en Saltar Intro; Enter para cerrar el diálogo.",
+      "screenshots": [
+        "screenshots/01-menu-to-play-menu.png",
+        "screenshots/01-menu-to-play-scene.png"
+      ],
+      "console_errors": 0
+    },
+    {
+      "file": "clips/02-move-and-jump.webm",
+      "duration_seconds": 16.4,
+      "bytes": 1878307,
+      "scene": "Movimiento y salto cargado en la base del tronco.",
+      "actions": "W durante 1.1 s; Espacio mantenido 1.15 s y liberado.",
+      "result": "La captura intermedia muestra Frogbert en el aire y ALT: 5 m; el HUD vuelve a 2 m al terminar el salto.",
+      "screenshots": [
+        "screenshots/02-move-and-jump-ready.png",
+        "screenshots/02-move-and-jump-after-move-jump.png"
+      ],
+      "console_errors": 0
+    },
+    {
+      "file": "clips/03-tongue-interaction.webm",
+      "duration_seconds": 20.44,
+      "bytes": 1939908,
+      "scene": "Intentos de usar la lengua cerca de la plataforma y la mosca inicial.",
+      "actions": "W durante 0.7 s; E cuatro veces, con pausas.",
+      "result": "El contador permanece en 0/20; no se confirma una captura de insecto ni anclaje visible.",
+      "screenshots": [
+        "screenshots/03-tongue-interaction-ready.png",
+        "screenshots/03-tongue-interaction-after-tongue.png",
+        "screenshots/03-tongue-action.png"
+      ],
+      "console_errors": 0
+    },
+    {
+      "file": "clips/04-mobile-portrait.webm",
+      "duration_seconds": 11.64,
+      "bytes": 643320,
+      "scene": "Inicio táctil emulado en portrait, escena de juego y un tap al canvas.",
+      "actions": "Tap en Inicio y Saltar Intro mediante selector táctil; Enter cierra el diálogo; tap al canvas.",
+      "result": "No hay controles visibles de movimiento táctil. El HUD/guía se aprietan y se solapan; visualViewport 390x844, innerWidth 485 y canvas 429x929.",
+      "screenshots": [
+        "screenshots/04-mobile-portrait-gameplay.png",
+        "screenshots/04-mobile-portrait-after-tap.png"
+      ],
+      "console_errors": 0
+    },
+    {
+      "file": "clips/05-climb-attempt.webm",
+      "duration_seconds": 16.36,
+      "bytes": 1960604,
+      "scene": "Intento breve de ascenso desde la base.",
+      "actions": "Tres ciclos: W + Espacio cargado 0.9 s, liberar Espacio, luego soltar W.",
+      "result": "Termina de nuevo en ALT: 2 m, base del tronco; no se alcanzó jefe ni cima.",
+      "screenshots": [
+        "screenshots/05-climb-attempt-base.png",
+        "screenshots/05-climb-attempt-climb-result.png"
+      ],
+      "console_errors": 0
+    }
+  ],
+  "screenshots": [
+    "00-menu.png",
+    "01-gameplay-entry.png",
+    "02-dialogue-advanced.png"
+  ],
+  "runtime_observations": {
+    "initial_hud": {
+      "lives": "3",
+      "bugs": "0/20",
+      "coins": "00",
+      "altitude": "2 m — Base del Tronco"
+    },
+    "initial_gameplay_console_errors": 0,
+    "all_clip_console_errors": 0,
+    "source_verified_controls": {
+      "HUD_copy": "WASD mover; Space cargar salto; E/Clic lengua; Q-E girar cámara",
+      "input_mapping": "KeyE lengua; KeyQ/KeyR rotación de cámara",
+      "note": "El HUD anuncia Q-E para cámara, pero la fuente registra Q y R; E activa lengua."
+    },
+    "mobile_controls": "No se observaron controles táctiles visibles; el handler de input usa teclado y eventos de mouse.",
+    "interaction_result": "E se intentó cuatro veces; no se confirmó insecto capturado y el contador siguió 0/20.",
+    "image_generation": "El concepto arte-ia/frogbert-concepto-v1.png se creó después de la captura y no está integrado en runtime.",
+    "user_art_direction": {
+      "banners_and_flags": "Use the face of Pato Lemus instead of a frog face; this is a requested visual direction and is not implemented."
+    }
+  },
+  "scripts": [
+    "capture-playwright.js",
+    "capture-mobile-corrected.js"
+  ],
+  "editable_source_checkout": {
+    "path": "/home/itadmin/Escritorio/FROGGY-FIGHT",
+    "branch": "main",
+    "commit": "41abecf7f097c2ab5861e61bcc7346c27bb399f5",
+    "remote": "https://github.com/julesprog963-stack/FROGGY-FIGHT.git",
+    "agents_md_found": false,
+    "node_modules_installed": true,
+    "product_code_changed": true,
+    "handoff_document_added": "CODEX_HANDOFF.md",
+    "final_preview_url": "http://127.0.0.1:4173/",
+    "final_static_package": "/home/itadmin/Escritorio/FROGGY-FIGHT-PULIDO"
+  },
+  "source_map": {
+    "scene_lighting": "src/main.js:43-77",
+    "player_model_materials": "src/player.js:71-197",
+    "player_jump": "src/player.js:298-345",
+    "player_tongue": "src/player.js:347-485",
+    "camera": "src/camera.js:10-198",
+    "input": "src/input.js:28-96",
+    "hud": "src/hud.js:3-81",
+    "level_and_platform_route": "src/level.js:51-258",
+    "procedural_textures": "src/textures.js:3-678",
+    "intro_banner_mesh": "src/cinematic.js:233-241",
+    "intro_banner_texture": "src/textures.js:514-578",
+    "banner_note": "createFrogBanner currently draws a frog silhouette and is used by the intro cinematic; replace it with Pato Lemus face. No world flag mesh is currently wired to this function.",
+    "style_responsive_surface": "src/style.css:55-111 and 378-421; no @media rules found",
+    "controls_copy": "index.html:57-59",
+    "package_scripts": "package.json:6-18"
+  },
+  "prepared_assets": [
+    {
+      "name": "Pato Lemus banner face",
+      "evidence_original": "arte-ia/pato-lemus-bandera-original.png",
+      "runtime_prepared_asset": "/home/itadmin/Escritorio/FROGGY-FIGHT/src/assets/pato-lemus-banner.webp",
+      "provenance_document": "arte-ia/pato-lemus-bandera-provenance.md",
+      "prompt_brief": "Banderas con cara de Pato Lemus en vez de rana.",
+      "source_dimensions_px": [
+        1254,
+        1254
+      ],
+      "source_bytes": 3035281,
+      "source_sha256": "5e924467b6d8d1eea3cd27065b908b7f11aab7bdc140e2da0ddcfb13a56a1e54",
+      "runtime_dimensions_px": [
+        512,
+        512
+      ],
+      "runtime_format": "WebP",
+      "conversion": "Pillow 10.2.0; LANCZOS; quality=90; method=6",
+      "runtime_bytes": 115074,
+      "runtime_sha256": "ee953d3702e7e0dd5658563e1244c7533128fd194c686e853b68dc5d24d4682e",
+      "integration_status": "Integrated into intro and level banner meshes. Final QA observed the texture in 6 intro meshes and 4 runtime meshes; the face is not legible in the initial gameplay framing.",
+      "repository_relative_path": "src/assets/pato-lemus-banner.webp"
+    }
+  ],
+  "after_validation": {
+    "captured_utc_date": "2026-10-12",
+    "scope": "Single final confirmation pass after the final implementation batch; not a full-gameplay or level-completion test.",
+    "browser": "Playwright Chromium; Browser plugin unavailable",
+    "script": "after/qa-smoke.js",
+    "report": "after/final/qa-report.json",
+    "build": {
+      "command": "npm run build",
+      "result": "passed",
+      "modules": 24,
+      "vite_js_chunk_warning": "641 kB JavaScript chunk exceeds the 500 kB warning threshold",
+      "dist_size_approx": "2.5 MB"
+    },
+    "package": {
+      "path": "/home/itadmin/Escritorio/FROGGY-FIGHT-PULIDO",
+      "source": "/home/itadmin/Escritorio/FROGGY-FIGHT/dist",
+      "preview_url": "http://127.0.0.1:4173/"
+    },
+    "result": {
+      "pass": true,
+      "http_status": 200,
+      "console_errors": 0,
+      "http_errors": 0
+    },
+    "viewports": [
+      {
+        "name": "desktop",
+        "inner": [
+          1440,
+          900
+        ],
+        "document": [
+          1440,
+          900
+        ],
+        "canvas": [
+          1440,
+          900
+        ]
+      },
+      {
+        "name": "mobile portrait",
+        "inner": [
+          390,
+          844
+        ],
+        "document": [
+          390,
+          844
+        ],
+        "canvas": [
+          390,
+          844
+        ],
+        "hud_overlaps": 0
+      },
+      {
+        "name": "mobile landscape",
+        "inner": [
+          844,
+          390
+        ],
+        "document": [
+          844,
+          390
+        ],
+        "canvas": [
+          844,
+          390
+        ],
+        "hud_overlaps": 0
+      }
+    ],
+    "interactions": {
+      "keyboard_lateral_movement": "position changed while held",
+      "charged_jump": "charge visible and release changed vertical position",
+      "camera": "Q/R changed camera yaw",
+      "tongue": "E triggered tongue; utility clicks did not",
+      "blur": "dispatched window blur cleared held movement key",
+      "touch": "physical CDP touch events showed lateral movement; jump charge was visible and release affected vertical position"
+    },
+    "banner_texture": {
+      "intro_meshes": 6,
+      "level_meshes": 4,
+      "canvas_px": [
+        256,
+        512
+      ],
+      "loaded_asset": "src/assets/pato-lemus-banner.webp",
+      "initial_gameplay_composition": "face not legible; banners outside/cropped in initial framing"
+    },
+    "evidence_files": [
+      "after/final/desktop-menu.png",
+      "after/final/desktop-intro.png",
+      "after/final/desktop-after.png",
+      "after/final/desktop-charge.png",
+      "after/final/desktop-after-jump.png",
+      "after/final/desktop-after.webm",
+      "after/final/mobile-menu.png",
+      "after/final/mobile-intro.png",
+      "after/final/mobile-portrait-after.png",
+      "after/final/mobile-charge.png",
+      "after/final/mobile-landscape-after.png"
+    ],
+    "limitations": [
+      "Full route, summit and boss were not verified.",
+      "Baseline tongue attempt did not confirm an insect capture.",
+      "Mobile touch was verified for initial movement and jump charge, not a complete controlled traversal.",
+      "The first gameplay framing does not show the banner face legibly."
+    ]
+  },
+  "repository_evidence_root": "docs/evidence",
+  "portable_evidence_paths": [
+    {
+      "source_evidence_relative_path": "clips/01-menu-to-play.webm",
+      "repository_relative_path": "docs/evidence/baseline/clips/01-menu-to-play.webm"
+    },
+    {
+      "source_evidence_relative_path": "clips/02-move-and-jump.webm",
+      "repository_relative_path": "docs/evidence/baseline/clips/02-move-and-jump.webm"
+    },
+    {
+      "source_evidence_relative_path": "clips/03-tongue-interaction.webm",
+      "repository_relative_path": "docs/evidence/baseline/clips/03-tongue-interaction.webm"
+    },
+    {
+      "source_evidence_relative_path": "clips/04-mobile-portrait.webm",
+      "repository_relative_path": "docs/evidence/baseline/clips/04-mobile-portrait.webm"
+    },
+    {
+      "source_evidence_relative_path": "clips/05-climb-attempt.webm",
+      "repository_relative_path": "docs/evidence/baseline/clips/05-climb-attempt.webm"
+    },
+    {
+      "source_evidence_relative_path": "00-menu.png",
+      "repository_relative_path": "docs/evidence/baseline/screenshots/00-menu.png"
+    },
+    {
+      "source_evidence_relative_path": "01-gameplay-entry.png",
+      "repository_relative_path": "docs/evidence/baseline/screenshots/01-gameplay-entry.png"
+    },
+    {
+      "source_evidence_relative_path": "02-dialogue-advanced.png",
+      "repository_relative_path": "docs/evidence/baseline/screenshots/02-dialogue-advanced.png"
+    },
+    {
+      "source_evidence_relative_path": "screenshots/02-move-and-jump-after-move-jump.png",
+      "repository_relative_path": "docs/evidence/baseline/screenshots/jump-at-5m.png"
+    },
+    {
+      "source_evidence_relative_path": "screenshots/03-tongue-interaction-after-tongue.png",
+      "repository_relative_path": "docs/evidence/baseline/screenshots/tongue-attempt.png"
+    },
+    {
+      "source_evidence_relative_path": "screenshots/04-mobile-portrait-gameplay.png",
+      "repository_relative_path": "docs/evidence/baseline/screenshots/mobile-baseline.png"
+    },
+    {
+      "source_evidence_relative_path": "screenshots/05-climb-attempt-climb-result.png",
+      "repository_relative_path": "docs/evidence/baseline/screenshots/climb-attempt.png"
+    },
+    {
+      "source_evidence_relative_path": "after/final/desktop-after.webm",
+      "repository_relative_path": "docs/evidence/final/clips/desktop-after.webm"
+    },
+    {
+      "source_evidence_relative_path": "after/final/desktop-after-jump.png",
+      "repository_relative_path": "docs/evidence/final/screenshots/desktop-after-jump.png"
+    },
+    {
+      "source_evidence_relative_path": "after/final/desktop-after.png",
+      "repository_relative_path": "docs/evidence/final/screenshots/desktop-after.png"
+    },
+    {
+      "source_evidence_relative_path": "after/final/desktop-charge.png",
+      "repository_relative_path": "docs/evidence/final/screenshots/desktop-charge.png"
+    },
+    {
+      "source_evidence_relative_path": "after/final/desktop-intro.png",
+      "repository_relative_path": "docs/evidence/final/screenshots/desktop-intro.png"
+    },
+    {
+      "source_evidence_relative_path": "after/final/desktop-menu.png",
+      "repository_relative_path": "docs/evidence/final/screenshots/desktop-menu.png"
+    },
+    {
+      "source_evidence_relative_path": "after/final/mobile-charge.png",
+      "repository_relative_path": "docs/evidence/final/screenshots/mobile-charge.png"
+    },
+    {
+      "source_evidence_relative_path": "after/final/mobile-intro.png",
+      "repository_relative_path": "docs/evidence/final/screenshots/mobile-intro.png"
+    },
+    {
+      "source_evidence_relative_path": "after/final/mobile-landscape-after.png",
+      "repository_relative_path": "docs/evidence/final/screenshots/mobile-landscape-after.png"
+    },
+    {
+      "source_evidence_relative_path": "after/final/mobile-menu.png",
+      "repository_relative_path": "docs/evidence/final/screenshots/mobile-menu.png"
+    },
+    {
+      "source_evidence_relative_path": "after/final/mobile-portrait-after.png",
+      "repository_relative_path": "docs/evidence/final/screenshots/mobile-portrait-after.png"
+    },
+    {
+      "source_evidence_relative_path": "after/final/qa-report.json",
+      "repository_relative_path": "docs/evidence/final/qa-report.json"
+    },
+    {
+      "source_evidence_relative_path": "arte-ia/frogbert-concepto-v1.png",
+      "repository_relative_path": "docs/evidence/art/frogbert-concepto-v1.png"
+    },
+    {
+      "source_evidence_relative_path": "arte-ia/frogbert-concepto-v2-pato-lemus.png",
+      "repository_relative_path": "docs/evidence/art/frogbert-concepto-v2-pato-lemus.png"
+    },
+    {
+      "source_evidence_relative_path": "arte-ia/pato-lemus-bandera-original.png",
+      "repository_relative_path": "docs/evidence/art/pato-lemus-bandera-original.png"
+    },
+    {
+      "source_evidence_relative_path": "arte-ia/prompt-concepto-v1.txt",
+      "repository_relative_path": "docs/evidence/art/prompt-concepto-v1.txt"
+    },
+    {
+      "source_evidence_relative_path": "arte-ia/prompts-banderas.txt",
+      "repository_relative_path": "docs/evidence/art/prompts-banderas.txt"
+    },
+    {
+      "source_evidence_relative_path": "arte-ia/pato-lemus-bandera-provenance.md",
+      "repository_relative_path": "docs/evidence/art/pato-lemus-bandera-provenance.md"
+    }
+  ]
+}

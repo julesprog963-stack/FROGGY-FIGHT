@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>El Ascenso de Frogbert - Plataformas 3D (Estilo N64)</title>
+  <link rel="icon" type="image/png" href="./assets/frog-pixel-96.png">
   <link rel="stylesheet" href="./src/style.css">
 </head>
 <body>
@@ -56,7 +57,32 @@
   <!-- Guía de controles -->
   <div id="controls-hint">
     [WASD] Moverse &nbsp;|&nbsp; [ESPACIO] Cargar Salto &nbsp;|&nbsp; [E / Clic] Lengua (Balanceo / Comer)<br>
-    [Arrastrar Ratón / Q-E] Girar Cámara &nbsp;|&nbsp; [20 Bichos = +1 Vida]
+    [Arrastrar Ratón / Q-R] Girar Cámara &nbsp;|&nbsp; [20 Bichos = +1 Vida]
+  </div>
+
+  <div id="jump-charge" role="progressbar" aria-label="Carga del salto" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden>
+    <span id="jump-charge-label">CARGANDO</span>
+    <div class="charge-track"><div id="jump-charge-fill"></div></div>
+  </div>
+
+  <div id="touch-controls" aria-label="Controles táctiles">
+    <div class="touch-dpad">
+      <button type="button" data-touch-action="forward" aria-label="Mover hacia adelante"><span class="touch-arrow up" aria-hidden="true"></span></button>
+      <button type="button" data-touch-action="left" aria-label="Mover a la izquierda"><span class="touch-arrow left" aria-hidden="true"></span></button>
+      <button type="button" data-touch-action="backward" aria-label="Mover hacia atrás"><span class="touch-arrow down" aria-hidden="true"></span></button>
+      <button type="button" data-touch-action="right" aria-label="Mover a la derecha"><span class="touch-arrow right" aria-hidden="true"></span></button>
+    </div>
+    <div class="touch-actions">
+      <div class="touch-camera">
+        <button type="button" data-touch-action="cLeft" aria-label="Girar cámara a la izquierda"><span class="touch-arrow left" aria-hidden="true"></span></button>
+        <span>CAM</span>
+        <button type="button" data-touch-action="cRight" aria-label="Girar cámara a la derecha"><span class="touch-arrow right" aria-hidden="true"></span></button>
+      </div>
+      <div class="touch-action-row">
+        <button type="button" data-touch-action="tongue">LENGUA</button>
+        <button type="button" data-touch-action="jump" aria-label="Mantener para cargar salto, soltar para saltar">SALTO</button>
+      </div>
+    </div>
   </div>
 
   <!-- Botones de utilidad -->

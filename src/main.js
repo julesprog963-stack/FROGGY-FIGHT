@@ -43,8 +43,8 @@ class Game {
   initThree() {
     // 1. Escena y Niebla N64
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x111c14);
-    this.scene.fog = new THREE.FogExp2(0x111c14, 0.016);
+    this.scene.background = new THREE.Color(0x153b35);
+    this.scene.fog = new THREE.FogExp2(0x153b35, 0.014);
 
     // 2. Cámara
     const aspect = window.innerWidth / window.innerHeight;
@@ -57,12 +57,16 @@ class Game {
     this.container.appendChild(this.renderer.domElement);
 
     // 4. Iluminación estilo años 90
-    const hemiLight = new THREE.HemisphereLight(0x74b9ff, 0x1e3725, 0.7);
+    const hemiLight = new THREE.HemisphereLight(0x91cdbb, 0x304323, 1.15);
     this.scene.add(hemiLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfffae6, 0.95);
-    sunLight.position.set(25, 45, 30);
+    const sunLight = new THREE.DirectionalLight(0xffd39a, 1.65);
+    sunLight.position.set(-18, 35, 26);
     this.scene.add(sunLight);
+
+    const rimLight = new THREE.DirectionalLight(0x70c8b7, 0.65);
+    rimLight.position.set(20, 24, -30);
+    this.scene.add(rimLight);
 
     // Luz industrial verde secundaria para la zona media
     const toxicLight = new THREE.PointLight(0x00ff88, 1.3, 35);
@@ -134,7 +138,9 @@ class Game {
 
     this.renderer.domElement.addEventListener('click', () => {
       if (this.state === 'playing') {
-        this.renderer.domElement.requestPointerLock?.();
+        if (window.matchMedia('(pointer: fine)').matches) {
+          this.renderer.domElement.requestPointerLock?.();
+        }
       }
     });
   }
@@ -174,6 +180,7 @@ class Game {
     requestAnimationFrame(() => this.animate());
 
     const dt = Math.min(this.clock.getDelta(), 0.08);
+    document.body.classList.toggle('is-playing', this.state === 'playing');
     this.input.updateGamepad();
 
     if (this.state === 'cinematic' && this.cinematic) {

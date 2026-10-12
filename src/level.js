@@ -4,6 +4,7 @@ import { TiltingLeaf, SteppingLPlatform, HangingSwingPlatform, TongueAnchor } fr
 import { SwampFly, BarkBeetle, PatrolWasp } from './bugs.js';
 import { NPC } from './npc.js';
 import { Coin } from './coin.js';
+import { buildForestAtmosphere } from './forest-art.js';
 
 function createCylinderPlatform(mesh, radius, height) {
   const box = new THREE.Box3();
@@ -46,6 +47,7 @@ export class Level {
     this.buildToxicDrainageEasterEgg();
     this.spawnNPCs();
     this.spawnCoins();
+    buildForestAtmosphere(this.scene);
   }
 
   buildWorld() {
@@ -95,7 +97,7 @@ export class Level {
     const trunkGeo = new THREE.CylinderGeometry(8.5, 10.5, this.trunkHeight, 8);
     const trunkMat = new THREE.MeshLambertMaterial({
       map: Textures.createTreeBark(),
-      color: 0x3a2d27,
+      color: 0xc6a782,
       flatShading: true
     });
     this.trunkMesh = new THREE.Mesh(trunkGeo, trunkMat);
@@ -166,7 +168,7 @@ export class Level {
     // 1. Plataforma redonda de inicio en la base
     const startMushroom = new THREE.Mesh(
       new THREE.CylinderGeometry(3.6, 3.9, 0.6, 12),
-      new THREE.MeshLambertMaterial({ color: 0xe67e22, flatShading: true })
+      new THREE.MeshLambertMaterial({ map: Textures.createWoodRings(), color: 0xeab873, flatShading: true })
     );
     startMushroom.position.set(0, 1.2, 11);
     this.scene.add(startMushroom);

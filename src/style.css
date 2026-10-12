@@ -48,7 +48,7 @@ body, html {
   background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%),
               radial-gradient(circle, transparent 65%, rgba(0, 0, 0, 0.5) 100%);
   background-size: 100% 4px, 100% 100%;
-  opacity: 0.85;
+  opacity: 0.55;
 }
 
 /* HUD Superior estilo N64 / Rareware */
@@ -418,4 +418,115 @@ body.in-dialogue #controls-hint {
 .icon-btn:hover {
   transform: translate(-2px, -2px);
   background: #1e293b;
+}
+
+#jump-charge {
+  position: absolute;
+  z-index: 12;
+  bottom: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 190px;
+  padding: 10px;
+  background: #142b22;
+  border: 2px solid #f1c40f;
+  border-radius: 4px;
+  color: #fff2a8;
+  text-align: center;
+  font-size: 8px;
+  line-height: 1.6;
+  pointer-events: none;
+}
+
+#jump-charge[hidden] { display: none; }
+.charge-track { height: 7px; background: #07160f; margin-top: 7px; overflow: hidden; }
+#jump-charge-fill { height: 100%; background: #f1c40f; transform-origin: left; }
+#touch-controls { display: none; }
+
+@media (max-width: 760px) {
+  #hud { top: 8px; left: 8px; right: 8px; flex-direction: column; gap: 8px; }
+  #hud > div:first-child { gap: 6px !important; }
+  .hud-panel { padding: 6px 8px; gap: 6px; font-size: 9px; border-width: 2px; }
+  .hud-pixel-icon { width: 24px; height: 24px; }
+  #hud-altitude { align-self: flex-end; font-size: 8px; padding: 8px; border-width: 2px; max-width: 100%; }
+  .modal-screen { width: 100%; height: 100%; max-height: 100dvh; padding: 18px; overflow-y: auto; }
+  .n64-logo { font-size: clamp(17px, 4.4vw, 28px); margin-bottom: 18px; }
+  .subtitle-n64 { font-size: 9px; line-height: 1.8; margin-top: 0; }
+  .story-card { padding: 16px; font-size: 11px; margin-bottom: 20px; max-width: 100%; }
+  .btn-n64 { font-size: 11px; padding: 15px; max-width: 100%; }
+  #n64-dialogue-box { left: 50%; transform: translateX(-50%); width: calc(100% - 16px); max-width: none; bottom: 16px; padding: 12px; }
+  #dialogue-speaker { font-size: 12px; }
+  #dialogue-content { font-size: 10px; line-height: 1.7; }
+  #utility-buttons { top: 86px; bottom: auto; right: 8px; gap: 6px; }
+  .icon-btn { font-size: 8px; padding: 10px 8px; min-height: 36px; }
+  #controls-hint { left: 8px; right: 8px; bottom: 8px; font-size: 8px; padding: 8px; }
+  .btn-skip-intro { top: 82px; left: 8px; right: auto; max-width: calc(100% - 120px); font-size: 8px; min-height: 44px; }
+  #boss-health-container { top: 82px; width: 65%; left: 8px; transform: none; }
+  .boss-title { font-size: 8px; }
+}
+
+@media (pointer: coarse) {
+  .icon-btn { min-height: 44px; }
+  #canvas-container { touch-action: none; }
+  #controls-hint { display: none; }
+  #utility-buttons { top: 88px; bottom: auto; right: 8px; }
+  body.is-playing:not(.in-cinematic):not(.in-dialogue) #touch-controls {
+    display: flex;
+    position: absolute;
+    left: max(8px, env(safe-area-inset-left));
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(10px, env(safe-area-inset-bottom));
+    justify-content: space-between;
+    align-items: flex-end;
+    z-index: 15;
+    pointer-events: none;
+  }
+  #touch-controls button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    border: 2px solid #c99a35;
+    border-radius: 7px;
+    background: rgba(11, 35, 27, 0.93);
+    color: #fff2a8;
+    box-shadow: 0 3px 8px #0008;
+    font: inherit;
+    font-size: 8px;
+    touch-action: none;
+    pointer-events: auto;
+    -webkit-touch-callout: none;
+  }
+  #touch-controls button.is-held { background: #38652b; border-color: #ffdf75; transform: translateY(2px); }
+  .touch-dpad { display: grid; grid-template-columns: repeat(3, 44px); grid-template-rows: repeat(3, 44px); gap: 3px; }
+  [data-touch-action="forward"] { grid-area: 1 / 2; }
+  [data-touch-action="left"] { grid-area: 2 / 1; }
+  [data-touch-action="backward"] { grid-area: 3 / 2; }
+  [data-touch-action="right"] { grid-area: 2 / 3; }
+  .touch-arrow { width: 12px; height: 12px; border-top: 3px solid currentColor; border-right: 3px solid currentColor; transform: rotate(-45deg); }
+  .touch-arrow.right { transform: rotate(45deg); }
+  .touch-arrow.down { transform: rotate(135deg); }
+  .touch-arrow.left { transform: rotate(-135deg); }
+  .touch-actions { display: flex; flex-direction: column; gap: 10px; }
+  .touch-camera { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 8px; color: #fff2a8; }
+  .touch-action-row { display: flex; gap: 8px; }
+  .touch-action-row button { width: 68px; height: 64px; }
+  #jump-charge { bottom: 164px; }
+  #btn-interact-npc { bottom: 170px; padding: 10px; font-size: 10px; max-width: calc(100% - 16px); }
+}
+
+@media (max-height: 500px) and (pointer: coarse) {
+  #hud { flex-direction: row; }
+  .hud-panel { padding: 6px 8px; font-size: 9px; border-width: 2px; }
+  .hud-pixel-icon { width: 24px; height: 24px; }
+  #utility-buttons { top: 58px; flex-direction: row; }
+  #jump-charge { bottom: 135px; }
+  .modal-screen { justify-content: flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialogue-hint, .interact-icon { animation: none; }
+  button { transition: none !important; }
 }

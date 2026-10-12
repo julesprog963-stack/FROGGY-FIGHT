@@ -21,8 +21,10 @@ export class InputManager {
 
     this.cameraYaw = 0;
     this.onDialogueAdvance = null;
+    this.touchPointers = new Map();
 
     this.setupListeners();
+    this.setupTouchControls();
   }
 
   setupListeners() {
@@ -71,7 +73,7 @@ export class InputManager {
 
     // Control de ratón para órbita de cámara y disparo de lengua
     window.addEventListener('mousedown', (e) => {
-      if (e.target.tagName === 'BUTTON') return;
+      if (!e.target.closest('#canvas-container')) return;
       if (e.button === 0) {
         // Clic izquierdo: disparar lengua
         this.keys.tonguePressed = true;
@@ -94,6 +96,56 @@ export class InputManager {
     });
 
     window.addEventListener('contextmenu', (e) => e.preventDefault());
+    window.addEventListener('blur', () => this.releaseInputs());
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) this.releaseInputs();
+    });
+  }
+
+  releaseInputs() {
+    if (this.keys.isJumpHeld) this.keys.jumpReleased = true;
+    for (const key of ['forward', 'backward', 'left', 'right', 'cLeft', 'cRight', 'jumpPressed', 'isJumpHeld', 'tonguePressed']) {
+      this.keys[key] = false;
+    }
+    this.mouse.isDown = false;
+    this.mouse.deltaX = this.mouse.deltaY = 0;
+    this.touchPointers.clear();
+    document.querySelectorAll('[data-touch-action]').forEach(button => button.classList.remove('is-held'));
+  }
+
+  setupTouchControls() {
+    document.querySelectorAll('[data-touch-action]').forEach(button => {
+      const action = button.dataset.touchAction;
+      button.addEventListener('pointerdown', event => {
+        event.preventDefault();
+        button.setPointerCapture(event.pointerId);
+        this.touchPointers.set(event.pointerId, action);
+        button.classList.add('is-held');
+        if (action === 'jump') {
+          if (!this.keys.isJumpHeld) this.keys.jumpPressed = true;
+          this.keys.isJumpHeld = true;
+        } else if (action === 'tongue') {
+          this.keys.tonguePressed = true;
+        } else {
+          this.keys[action] = true;
+        }
+      });
+      const release = event => {
+        if (!this.touchPointers.has(event.pointerId)) return;
+        this.touchPointers.delete(event.pointerId);
+        if ([...this.touchPointers.values()].includes(action)) return;
+        button.classList.remove('is-held');
+        if (action === 'jump') {
+          this.keys.isJumpHeld = false;
+          this.keys.jumpReleased = true;
+        } else if (action !== 'tongue') {
+          this.keys[action] = false;
+        }
+      };
+      button.addEventListener('pointerup', release);
+      button.addEventListener('pointercancel', release);
+      button.addEventListener('lostpointercapture', release);
+    });
   }
 
   updateGamepad() {

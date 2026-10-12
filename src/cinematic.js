@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Textures } from './textures.js';
 import { audio } from './audio.js';
+import { createLemusBanner } from './banner.js';
 
 export class CinematicIntro {
   constructor(scene, camera, player, hud, onComplete) {
@@ -229,13 +230,8 @@ export class CinematicIntro {
     roof.position.set(0, 11.2, 0);
     towerGroup.add(roof);
 
-    // Estandarte verde de TALACORP con la silueta de rana
-    const bannerGeo = new THREE.PlaneGeometry(2.0, 4.0);
-    const bannerMat = new THREE.MeshLambertMaterial({
-      map: Textures.createFrogBanner(),
-      side: THREE.DoubleSide
-    });
-    const banner = new THREE.Mesh(bannerGeo, bannerMat);
+    // TALACORP usa el rostro de Pato Lemus en sus estandartes.
+    const banner = createLemusBanner();
     banner.position.set(0, 3.8, 1.4);
     banner.rotation.y = (side === 1) ? 0.2 : -0.2; // Sutil ángulo hacia el frente
     towerGroup.add(banner);

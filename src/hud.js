@@ -15,6 +15,9 @@ export class HUD {
     this.dialogueSpeaker = document.getElementById('dialogue-speaker');
     this.victoryScreen = document.getElementById('victory-screen');
     this.gameOverScreen = document.getElementById('game-over-screen');
+    this.jumpCharge = document.getElementById('jump-charge');
+    this.jumpChargeFill = document.getElementById('jump-charge-fill');
+    this.jumpChargeLabel = document.getElementById('jump-charge-label');
 
     this.currentText = '';
     this.textIndex = 0;
@@ -41,6 +44,13 @@ export class HUD {
   }
 
   update(player, level, boss) {
+    if (this.jumpCharge) {
+      const ratio = Math.min(player.chargeTime / 0.35, 1);
+      this.jumpCharge.hidden = !player.isChargingJump;
+      this.jumpCharge.setAttribute('aria-valuenow', Math.round(ratio * 100));
+      this.jumpChargeFill.style.transform = `scaleX(${ratio})`;
+      this.jumpChargeLabel.textContent = ratio >= 1 ? '¡SUELTA PARA SALTAR!' : 'CARGANDO SALTO';
+    }
     // 1. Contador de vidas, bichos y monedas
     if (this.livesElem) this.livesElem.textContent = `x ${player.lives}`;
     if (this.bugsElem) this.bugsElem.textContent = `${player.bugsEaten % 20} / 20`;
