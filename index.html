@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Froggy-Fight - Plataformas 3D (Estilo Conker)</title>
+  <title>El Ascenso de Frogbert - Plataformas 3D (Estilo N64)</title>
   <link rel="stylesheet" href="./src/style.css">
 </head>
 <body>
@@ -14,7 +14,7 @@
   <div id="hud">
     <div style="display: flex; gap: 14px;">
       <div class="hud-panel">
-        <img src="./assets/frog-pixel-96.png" class="hud-pixel-icon" alt="Froggy" />
+        <img src="./assets/frog-pixel-96.png" class="hud-pixel-icon" alt="Frogbert" />
         <span id="hud-lives" class="rare-text">x 3</span>
       </div>
       <div class="hud-panel">
@@ -35,6 +35,9 @@
     <span id="interact-prompt">[E / Clic] Hablar</span>
   </button>
 
+  <!-- Botón para omitir la cinemática de introducción -->
+  <button id="btn-skip-cinematic" class="btn-skip-intro" style="display: none;">⏩ Saltar Intro [ESPACIO]</button>
+
   <!-- Barra de Vida del Jefe TALACORP -->
   <div id="boss-health-container">
     <div class="boss-title">TALACORP BUG-ZAPPER 3000</div>
@@ -45,7 +48,7 @@
 
   <!-- Bocadillo de Diálogo estilo Conker -->
   <div id="n64-dialogue-box">
-    <div id="dialogue-speaker">FROGGY</div>
+    <div id="dialogue-speaker">FROGBERT</div>
     <div id="dialogue-content">¡Croak! ¡Maldita corporación TALACORP, talaron mi árbol!</div>
     <div class="dialogue-hint">[Presiona ESPACIO o ENTER para continuar]</div>
   </div>
@@ -64,17 +67,17 @@
 
   <!-- Pantalla de Inicio / Intro -->
   <div class="modal-screen" id="start-screen">
-    <h1 class="n64-logo">FROGGY-FIGHT<br><span style="font-size: 16px; color: #2ecc71;">DEFENSA DEL BOSQUE</span></h1>
-    <div class="story-card">
-      <p style="margin-bottom: 12px; color: #f1c40f;">
-        “Eres pequeño, el mundo se inclina contra ti, y cada bicho que comes te da otra oportunidad de llegar a casa.”
+    <h1 class="n64-logo">EL ASCENSO DE<br><span style="color: #2ecc71; text-shadow: 4px 4px 0 #000, 0 0 16px rgba(46, 204, 113, 0.6);">FROGBERT</span></h1>
+    <div class="subtitle-n64">★ VENGANZA EN EL ÁRBOL SAGRADO ★</div>
+    <div class="story-card" style="max-width: 520px; text-align: center;">
+      <p style="color: #f1c40f; margin-bottom: 8px;">
+        Pato Lemus y su corporación TALACORP han tomado el pantano por la fuerza.
       </p>
-      <p>
-        La corporación <b>TALACORP</b> ha talado tu hogar ancestral y fumigado el pantano.
-        ¡Sube en espiral por el tronco gigante, esquiva las hojas inestables que se inclinan, balancéate con tu lengua y aplasta al <b>Robot Exterminador</b> en la cima!
+      <p style="font-size: 11px; color: #a4b0be;">
+        ¡Despierta de la siesta, enfrenta a sus máquinas y escala el Árbol Sagrado hasta la cima!
       </p>
     </div>
-    <button class="btn-n64" id="btn-start">¡EMPEZAR AVENTURA!</button>
+    <button class="btn-n64" id="btn-start">🎮 ¡INICIAR AVENTURA!</button>
   </div>
 
   <!-- Pantalla de Game Over -->

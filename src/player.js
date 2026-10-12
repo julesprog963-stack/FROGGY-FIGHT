@@ -174,6 +174,33 @@ export class Player {
       this.modelContainer.add(arm);
       this.arms.push(arm);
     });
+
+    // 6. Mochilita marrón de explorador (diseño oficial de Frogbert según arte de referencia)
+    const backpackMat = new THREE.MeshLambertMaterial({ color: 0x8b4513, flatShading: true });
+    const flapMat = new THREE.MeshLambertMaterial({ color: 0x5c2c10, flatShading: true });
+    const buckleMat = new THREE.MeshBasicMaterial({ color: 0xf1c40f });
+
+    this.backpack = new THREE.Group();
+    const packBody = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.44, 0.32), backpackMat);
+    packBody.position.set(0, 0.05, -0.68);
+    this.backpack.add(packBody);
+
+    const flap = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.24, 0.34), flapMat);
+    flap.position.set(0, 0.22, -0.68);
+    this.backpack.add(flap);
+
+    const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.1, 0.06), buckleMat);
+    buckle.position.set(0, 0.08, -0.85);
+    this.backpack.add(buckle);
+
+    [-0.24, 0.24].forEach(x => {
+      const strap = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.45, 0.65), flapMat);
+      strap.position.set(x, 0.12, -0.32);
+      strap.rotation.x = -0.3;
+      this.backpack.add(strap);
+    });
+
+    this.modelContainer.add(this.backpack);
   }
 
   createShadow() {
@@ -691,6 +718,50 @@ export class Player {
       this.shadow.scale.set(scale, scale, 1);
     } else {
       this.shadow.visible = false;
+    }
+  }
+
+  setSleepingPose(sleeping) {
+    if (sleeping) {
+      // Frogbert tumbado plácidamente de lado / boca arriba con los ojos cerrados
+      this.modelContainer.rotation.z = Math.PI * 0.42;
+      this.modelContainer.rotation.x = -Math.PI * 0.12;
+      this.modelContainer.position.y = 0.28;
+      // Cerrar párpados completamente
+      this.eyelids.forEach(el => {
+        el.rotation.x = 0;
+      });
+      // Ocultar pupilas para simular sueño
+      this.pupils.forEach(p => { p.visible = false; });
+    } else {
+      this.modelContainer.rotation.z = 0;
+      this.modelContainer.rotation.x = 0;
+      this.modelContainer.position.y = 0.60;
+      this.eyelids.forEach(el => {
+        el.rotation.x = -Math.PI / 2.8;
+      });
+      this.pupils.forEach(p => { p.visible = true; });
+    }
+  }
+
+  setAngryPose(angry) {
+    if (angry) {
+      // Párpados enojados inclinados y ceño fruncido
+      this.eyelids.forEach((el, i) => {
+        el.rotation.x = -Math.PI / 3.2;
+        el.rotation.z = (i === 0) ? -0.35 : 0.35;
+      });
+      // Inflar ligeramente las mejillas
+      this.cheeks.forEach(c => c.scale.set(1.4, 1.4, 1.4));
+      // Postura erguida y desafiante
+      this.modelContainer.scale.set(1.05, 1.15, 1.05);
+    } else {
+      this.eyelids.forEach(el => {
+        el.rotation.z = 0;
+        el.rotation.x = -Math.PI / 2.8;
+      });
+      this.cheeks.forEach(c => c.scale.set(1, 1, 1));
+      this.modelContainer.scale.set(1, 1, 1);
     }
   }
 }

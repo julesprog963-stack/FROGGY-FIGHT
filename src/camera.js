@@ -51,6 +51,23 @@ export class ThirdPersonCamera {
     this.currentYaw = val;
   }
 
+  resetPosition() {
+    if (this.target && this.target.position) {
+      const p = this.target.position;
+      const initialAngle = Math.atan2(p.x, p.z);
+      this.currentYaw = initialAngle;
+      this.manualYaw = 0;
+      this.currentPosition.set(
+        p.x + Math.sin(initialAngle) * this.distance,
+        p.y + 4.5,
+        p.z + Math.cos(initialAngle) * this.distance
+      );
+      this.currentLookAt.copy(p).add(new THREE.Vector3(0, 0.8, 0));
+      this.camera.position.copy(this.currentPosition);
+      this.camera.lookAt(this.currentLookAt);
+    }
+  }
+
   addTrauma(amount) {
     this.trauma = Math.min(1.0, this.trauma + amount);
   }

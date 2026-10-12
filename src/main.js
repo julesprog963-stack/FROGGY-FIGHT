@@ -7,11 +7,12 @@ import { BossBugZapper } from './boss.js';
 import { ThirdPersonCamera } from './camera.js';
 import { ParticleSystem } from './particles.js';
 import { HUD } from './hud.js';
+import { CinematicIntro } from './cinematic.js';
 
 class Game {
   constructor() {
     this.container = document.getElementById('canvas-container');
-    this.state = 'start'; // 'start' | 'playing' | 'dialogue' | 'gameover' | 'victory'
+    this.state = 'start'; // 'start' | 'cinematic' | 'playing' | 'gameover' | 'victory'
 
     this.scene = null;
     this.camera = null;
@@ -24,6 +25,7 @@ class Game {
     this.player = null;
     this.boss = null;
     this.particles = null;
+    this.cinematic = null;
 
     this.clock = new THREE.Clock();
     this.dialogueTriggeredMid = false;
@@ -77,16 +79,36 @@ class Game {
 
   setupUI() {
     const startBtn = document.getElementById('btn-start');
+    const skipBtn = document.getElementById('btn-skip-cinematic');
+
     startBtn.onclick = () => {
       audio.init();
       document.getElementById('start-screen').style.display = 'none';
-      this.state = 'playing';
+      if (skipBtn) skipBtn.style.display = 'block';
 
-      this.hud.showDialogue(
-        'FROGGY',
-        '¡Croak! ¡Maldita corporación TALACORP, talaron mi árbol! ¡Subiré hasta la cima y les enseñaré quién manda!'
+      this.state = 'cinematic';
+      this.cinematic = new CinematicIntro(
+        this.scene,
+        this.camera,
+        this.player,
+        this.hud,
+        () => {
+          this.state = 'playing';
+          if (skipBtn) skipBtn.style.display = 'none';
+          this.cinematic = null;
+          this.tpCamera.resetPosition();
+        }
       );
     };
+
+    if (skipBtn) {
+      skipBtn.onclick = () => {
+        skipBtn.blur();
+        if (this.cinematic) {
+          this.cinematic.skip();
+        }
+      };
+    }
 
     this.input.onDialogueAdvance = () => {
       if (document.getElementById('n64-dialogue-box').style.display === 'flex') {
@@ -125,9 +147,12 @@ class Game {
     this.player.lives = 3;
     this.player.bugsEaten = 0;
     this.player.coins = 0;
-    this.player.position.set(0, 2, 8);
+    this.player.position.set(0, 1.6, 10);
     this.player.velocity.set(0, 0, 0);
-    this.player.lastCheckpoint.set(0, 2, 8);
+    this.player.lastCheckpoint.set(0, 1.6, 10);
+    this.player.setSleepingPose(false);
+    this.player.setAngryPose(true);
+    this.tpCamera.resetPosition();
     this.boss.hp = 3;
     this.boss.phase = 1;
     this.boss.state = 'idle';
@@ -144,7 +169,13 @@ class Game {
     const dt = Math.min(this.clock.getDelta(), 0.08);
     this.input.updateGamepad();
 
-    if (this.state === 'playing') {
+    if (this.state === 'cinematic' && this.cinematic) {
+      this.particles.update(dt);
+      this.cinematic.update(dt);
+      if (this.input.keys.jumpPressed && this.hud.dialogueBox.style.display !== 'flex') {
+        this.cinematic.skip();
+      }
+    } else if (this.state === 'playing') {
       if (this.input.mouse.deltaX !== 0 || this.input.mouse.deltaY !== 0) {
         this.tpCamera.handleMouseMove(this.input.mouse.deltaX, this.input.mouse.deltaY);
       }
@@ -181,7 +212,7 @@ class Game {
         if (!this.dialogueTriggeredMid) {
           this.dialogueTriggeredMid = true;
           this.hud.showDialogue(
-            'FROGGY',
+            'FROGBERT',
             '¡Uff, tuberías de veneno! Debo tener cuidado con las hojas que tiemblan... ¡y comer moscas para ganar vidas!'
           );
         }

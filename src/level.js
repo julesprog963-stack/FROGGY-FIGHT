@@ -277,11 +277,12 @@ export class Level {
     this.scene.add(slime);
 
     const signPost = new THREE.Mesh(new THREE.BoxGeometry(0.2, 3, 0.2), new THREE.MeshLambertMaterial({ color: 0x333333 }));
-    signPost.position.set(0, 3.2, 13.5);
+    signPost.position.set(3.5, 3.2, 13.0);
     this.scene.add(signPost);
 
     const signBoard = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.4, 0.15), pipeMat);
-    signBoard.position.set(0, 4.2, 13.5);
+    signBoard.position.set(3.5, 4.2, 13.0);
+    signBoard.rotation.y = -0.3;
     this.scene.add(signBoard);
   }
 

@@ -484,5 +484,96 @@ export const Textures = {
     tex.magFilter = THREE.NearestFilter;
     tex.minFilter = THREE.LinearFilter;
     return tex;
+  },
+
+  // Traje diplomático azul marino con rayas finas (Pato Lemus en la referencia)
+  createNavyPinstripe() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+
+    // Azul marino oscuro elegante
+    ctx.fillStyle = '#1c2d44';
+    ctx.fillRect(0, 0, 64, 64);
+
+    // Rayas verticales finas en azul grisáceo tenue
+    ctx.fillStyle = '#4a6585';
+    for (let x = 4; x < 64; x += 12) {
+      ctx.fillRect(x, 0, 2, 64);
+    }
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.magFilter = THREE.NearestFilter;
+    tex.minFilter = THREE.NearestFilter;
+    return tex;
+  },
+
+  // Corbata oscura con lunares rojos sutiles
+  createPolkaDotTie() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#1e272e';
+    ctx.fillRect(0, 0, 32, 32);
+
+    ctx.fillStyle = '#eb4d4b';
+    ctx.beginPath();
+    ctx.arc(8, 8, 2.5, 0, Math.PI * 2);
+    ctx.arc(24, 8, 2.5, 0, Math.PI * 2);
+    ctx.arc(16, 20, 2.5, 0, Math.PI * 2);
+    ctx.arc(8, 28, 2.5, 0, Math.PI * 2);
+    ctx.arc(24, 28, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.magFilter = THREE.NearestFilter;
+    tex.minFilter = THREE.NearestFilter;
+    return tex;
+  },
+
+  // Metal industrial con remaches y óxido para los Talabots
+  createTalabotMetal() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#353b48';
+    ctx.fillRect(0, 0, 64, 64);
+
+    // Franja de peligro amarilla
+    ctx.fillStyle = '#f1c40f';
+    ctx.fillRect(0, 22, 64, 20);
+    ctx.fillStyle = '#2f3640';
+    for (let x = -10; x < 74; x += 14) {
+      ctx.beginPath();
+      ctx.moveTo(x, 22);
+      ctx.lineTo(x + 8, 22);
+      ctx.lineTo(x + 2, 42);
+      ctx.lineTo(x - 6, 42);
+      ctx.fill();
+    }
+
+    // Remaches plateados
+    ctx.fillStyle = '#dcdde1';
+    [6, 58].forEach(x => {
+      [6, 58].forEach(y => {
+        ctx.fillRect(x, y, 3, 3);
+      });
+    });
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.magFilter = THREE.NearestFilter;
+    tex.minFilter = THREE.NearestFilter;
+    return tex;
   }
 };

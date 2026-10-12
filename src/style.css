@@ -281,6 +281,42 @@ body, html {
   line-height: 1.4;
 }
 
+.subtitle-n64 {
+  font-size: 13px;
+  color: #f1c40f;
+  letter-spacing: 2px;
+  text-shadow: 2px 2px 0px #000;
+  margin-top: -12px;
+  margin-bottom: 22px;
+}
+
+.btn-skip-intro {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 3px solid #f39c12;
+  box-shadow: 3px 3px 0px #000;
+  border-radius: 8px;
+  padding: 10px 18px;
+  color: #facc15;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  z-index: 60;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+
+.btn-skip-intro:hover {
+  background: rgba(30, 41, 59, 0.98);
+  border-color: #f1c40f;
+  transform: scale(1.05);
+}
+
+.btn-skip-intro:active {
+  transform: translate(2px, 2px);
+}
+
 .story-card {
   max-width: 660px;
   background: rgba(30, 20, 14, 0.96);
