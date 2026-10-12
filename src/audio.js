@@ -495,6 +495,119 @@ class AudioManager {
     osc.start(now);
     osc.stop(now + 0.42);
   }
+
+  // SFX: Rotores de Helicóptero TALACORP (Batido rítmico whop-whop)
+  playHelicopterBlade() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(65, now);
+    osc.frequency.exponentialRampToValueAtTime(35, now + 0.08);
+
+    gain.gain.setValueAtTime(0.35, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.1);
+  }
+
+  // SFX: Explosión masiva (Mina de púas estilo Mario vs Bowser 64)
+  playExplosion() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+
+    // Golpe de impacto grave
+    const osc1 = this.ctx.createOscillator();
+    const gain1 = this.ctx.createGain();
+    osc1.type = 'sawtooth';
+    osc1.frequency.setValueAtTime(120, now);
+    osc1.frequency.exponentialRampToValueAtTime(25, now + 0.6);
+
+    gain1.gain.setValueAtTime(0.8, now);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+    osc1.connect(gain1);
+    gain1.connect(this.sfxGain);
+    osc1.start(now);
+    osc1.stop(now + 0.7);
+
+    // Ruido crujiente / estruendo
+    const osc2 = this.ctx.createOscillator();
+    const gain2 = this.ctx.createGain();
+    osc2.type = 'square';
+    osc2.frequency.setValueAtTime(280, now);
+    osc2.frequency.exponentialRampToValueAtTime(45, now + 0.45);
+
+    gain2.gain.setValueAtTime(0.5, now);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    osc2.connect(gain2);
+    gain2.connect(this.sfxGain);
+    osc2.start(now);
+    osc2.stop(now + 0.52);
+  }
+
+  // SFX: Giro centrífugo de jefe (Estilo "So long King Bowser!")
+  playSpinWhoosh(pitch = 1.0) {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    const baseFreq = 220 * pitch;
+    osc.frequency.setValueAtTime(baseFreq, now);
+    osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, now + 0.1);
+
+    gain.gain.setValueAtTime(0.28, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.13);
+  }
+
+  // SFX: Lanzamiento potente por los aires
+  playThrow() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(620, now + 0.22);
+
+    gain.gain.setValueAtTime(0.6, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.3);
+  }
+
+  // SFX: Alarma de activación de jefe Talabot
+  playBossAlarm() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    [0, 0.18, 0.36].forEach(offset => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(660, now + offset);
+      osc.frequency.setValueAtTime(440, now + offset + 0.09);
+
+      gain.gain.setValueAtTime(0.3, now + offset);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + offset + 0.17);
+
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+      osc.start(now + offset);
+      osc.stop(now + offset + 0.18);
+    });
+  }
 }
 
 export const audio = new AudioManager();

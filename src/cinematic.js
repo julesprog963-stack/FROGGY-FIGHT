@@ -25,9 +25,13 @@ export class CinematicIntro {
     this.powStar = null;
     this.lanternLights = [];
 
-    // Trayectoria de vuelo de Frogbert
-    this.flightStartPos = new THREE.Vector3(-1.65, 0.45, 26.2);
-    this.flightPeakPos = new THREE.Vector3(0, 11.5, 18.0);
+    // Elevación a la copa del Árbol Sagrado (y ≈ 38.5m)
+    this.elevationY = 38.5;
+
+    // Trayectoria de vuelo y caída libre de Frogbert desde la copa hasta la base
+    this.flightStartPos = new THREE.Vector3(-1.75, this.elevationY + 0.55, 26.8);
+    this.flightApexPos = new THREE.Vector3(0, this.elevationY + 3.2, 24.0);
+    this.flightMidPos = new THREE.Vector3(1.2, 19.5, 17.5);
     this.flightEndPos = new THREE.Vector3(0, 1.6, 11.0);
     this.flightTime = 0;
 
@@ -40,35 +44,46 @@ export class CinematicIntro {
   }
 
   setupScene() {
-    // 1. ARENA DE MADERA CIRCULAR (Exacta a la referencia)
+    const ey = this.elevationY;
+
+    // 1. ARENA DE MADERA CIRCULAR EN LA COPA DEL ÁRBOL
     const woodMat = new THREE.MeshLambertMaterial({
       color: 0x5a381e,
       flatShading: true
     });
     const deck = new THREE.Mesh(new THREE.CylinderGeometry(18, 18, 0.7, 32), woodMat);
-    deck.position.set(0, 0.05, 22.0);
+    deck.position.set(0, ey + 0.05, 22.0);
     this.cinematicGroup.add(deck);
 
     // Borde de tablones de la arena
     const rimMat = new THREE.MeshLambertMaterial({ color: 0x3d2311, flatShading: true });
     const rim = new THREE.Mesh(new THREE.CylinderGeometry(18.2, 18.2, 0.35, 32), rimMat);
-    rim.position.set(0, 0.35, 22.0);
+    rim.position.set(0, ey + 0.35, 22.0);
     this.cinematicGroup.add(rim);
 
-    // 2. GRAN TRONCO SAGRADO EN EL FONDO CENTRAL (Atrás de Pato Lemus sin taparlo)
+    // 2. GRAN TRONCO SAGRADO QUE ATRAVIESA TODO EL FONDO DESDE EL SUELO HASTA LA CIMA
     const trunkBarkMat = new THREE.MeshLambertMaterial({ color: 0x1f140a, flatShading: true });
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(8.5, 9.5, 36, 16), trunkBarkMat);
-    trunk.position.set(0, 18, 7.5);
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(8.5, 10.5, 54, 16), trunkBarkMat);
+    trunk.position.set(0, 27, 0);
     this.cinematicGroup.add(trunk);
 
-    // Luz frontal suave directa para iluminar el rostro y traje de Pato Lemus (idéntico al render)
+    // Vigas de soporte rústicas debajo del mirador de la copa
+    const beamMat = new THREE.MeshLambertMaterial({ color: 0x2e1a0c, flatShading: true });
+    [-6, 0, 6].forEach(bx => {
+      const beam = new THREE.Mesh(new THREE.BoxGeometry(1.2, 12, 1.2), beamMat);
+      beam.position.set(bx, ey - 6, 21.0);
+      beam.rotation.z = bx * 0.03;
+      this.cinematicGroup.add(beam);
+    });
+
+    // Luz frontal suave directa para iluminar el rostro y traje de Pato Lemus
     const keyLight = new THREE.DirectionalLight(0xfffae6, 1.4);
-    keyLight.position.set(-1, 5, 32);
+    keyLight.position.set(-1, ey + 5, 32);
     this.cinematicGroup.add(keyLight);
 
     // 3. TORRES DE VIGILANCIA CON ESTANDARTES Y FAROLES (Izquierda y Derecha)
-    this.buildWatchtower(-4.8, 19.5, 1);
-    this.buildWatchtower(4.8, 19.5, -1);
+    this.buildWatchtower(-4.8, 19.5, 1, ey);
+    this.buildWatchtower(4.8, 19.5, -1, ey);
 
     // 4. PILARES INDUSTRIALES DEL FONDO CON BALIZAS ROJAS (TALACORP)
     const pillarMat = new THREE.MeshLambertMaterial({ color: 0x151b22, flatShading: true });
@@ -98,13 +113,13 @@ export class CinematicIntro {
 
     // 5. MODELO FIEL 3D DE PATO LEMUS (Idéntico a la imagen de referencia)
     this.patoLemus = this.createPatoLemusModel();
-    this.patoLemus.position.set(0.55, 0.45, 22.4);
+    this.patoLemus.position.set(0.55, ey + 0.45, 22.4);
     this.patoLemus.scale.set(1.22, 1.22, 1.22);
     this.patoLemus.rotation.set(0, -0.22, 0); // Orientación de 3/4 majestuosa
     this.cinematicGroup.add(this.patoLemus);
 
     // 6. FROGBERT EN PRIMER PLANO (Esquina inferior izquierda, mirando hacia Pato Lemus desde atrás)
-    this.flightStartPos.set(-1.75, 0.55, 26.8);
+    this.flightStartPos.set(-1.75, ey + 0.55, 26.8);
     this.player.position.copy(this.flightStartPos);
     this.player.mesh.position.copy(this.player.position);
     this.player.mesh.scale.set(0.72, 0.72, 0.72);
@@ -115,17 +130,17 @@ export class CinematicIntro {
     if (this.player.backpack) this.player.backpack.visible = true;
 
     // 7. ESTRELLA DE IMPACTO CÓMICA ¡POW!
-    const powGeo = new THREE.DodecahedronGeometry(1.8, 0);
+    const powGeo = new THREE.DodecahedronGeometry(0.55, 0);
     const powMat = new THREE.MeshBasicMaterial({ color: 0xf1c40f });
     this.powStar = new THREE.Mesh(powGeo, powMat);
-    this.powStar.scale.set(1.5, 1.5, 0.5);
-    this.powStar.position.set(-1.0, 1.1, 25.8);
+    this.powStar.scale.set(1.4, 1.4, 0.4);
+    this.powStar.position.set(-1.15, ey + 1.25, 25.5);
     this.powStar.visible = false;
     this.cinematicGroup.add(this.powStar);
 
     // 8. CÁMARA: ENCUADRE CONTRAPICADO EXACTO A LA IMAGEN DE REFERENCIA
-    this.camera.position.set(-0.65, 1.70, 29.2);
-    this.camera.lookAt(0.35, 2.70, 22.4);
+    this.camera.position.set(-0.65, ey + 1.70, 29.2);
+    this.camera.lookAt(0.35, ey + 2.70, 22.4);
     this.camera.fov = 52;
     this.camera.updateProjectionMatrix();
 
@@ -138,11 +153,11 @@ export class CinematicIntro {
     }
   }
 
-  buildWatchtower(x, z, side) {
+  buildWatchtower(x, z, side, y = 0) {
     const woodMat = new THREE.MeshLambertMaterial({ color: 0x4a2e16, flatShading: true });
     const beamMat = new THREE.MeshLambertMaterial({ color: 0x3d2714, flatShading: true });
     const towerGroup = new THREE.Group();
-    towerGroup.position.set(x, 0, z);
+    towerGroup.position.set(x, y, z);
 
     // 4 Postes verticales
     [-1.2, 1.2].forEach(px => {
@@ -181,7 +196,7 @@ export class CinematicIntro {
     towerGroup.add(lantern);
 
     const warmLight = new THREE.PointLight(0xffd32a, 2.5, 16);
-    warmLight.position.set(x, 5.5, z + 1.6);
+    warmLight.position.set(x, y + 5.5, z + 1.6);
     this.cinematicGroup.add(warmLight);
     this.lanternLights.push(warmLight);
 
@@ -574,14 +589,16 @@ export class CinematicIntro {
       this.pointingArm.rotation.y = Math.sin(this.time * 3.5) * 0.05;
     }
 
+    const ey = this.elevationY;
+
     // MÁQUINA DE ESTADOS DE LA CINEMÁTICA
     if (this.time < 5.8) {
-      // FASE 1: CONFRONTACIÓN ÉPICA (Exacta a la imagen de referencia)
+      // FASE 1: CONFRONTACIÓN ÉPICA EN LA COPA DEL ÁRBOL SAGRADO
       this.phase = 'confrontation';
 
       // Cámara fija en ángulo bajo contrapicado idéntico a la referencia
-      this.camera.position.set(-0.65, 1.70, 29.2);
-      this.camera.lookAt(0.35, 2.70, 22.4);
+      this.camera.position.set(-0.65, ey + 1.70, 29.2);
+      this.camera.lookAt(0.35, ey + 2.70, 22.4);
 
       // Frogbert en primer plano mirando hacia Pato Lemus desde atrás
       this.player.position.copy(this.flightStartPos);
@@ -596,60 +613,108 @@ export class CinematicIntro {
         );
       }
 
-    } else if (this.time < 7.4) {
-      // FASE 2: LA PATADA DE PATO LEMUS
+    } else if (this.time < 7.6) {
+      // FASE 2: ANIMACIÓN IMPECABLE DE PATADA (/impeccable)
       this.phase = 'kick';
       if (this.hud && this.hud.dialogueBox.style.display === 'flex') {
         this.hud.closeDialogue();
       }
 
-      const kickProgress = (this.time - 5.8) / 1.6;
+      const kickProgress = (this.time - 5.8) / 1.8;
 
-      if (this.rightLegPivot) {
-        if (kickProgress < 0.3) {
-          // Carga hacia atrás
-          this.rightLegPivot.rotation.x = -kickProgress * 2.8;
-        } else if (kickProgress < 0.75) {
-          // ¡Patadón hacia adelante!
-          this.rightLegPivot.rotation.x = 1.6;
-          this.powStar.visible = true;
-          this.powStar.scale.setScalar(1.4 + Math.sin(kickProgress * 25) * 0.5);
+      if (kickProgress < 0.35) {
+        // ETAPA 1: ANTICIPACIÓN (WINDUP) - Carga hacia atrás con flexión de rodilla
+        const windRatio = kickProgress / 0.35;
+        if (this.patoLemus) this.patoLemus.rotation.x = -windRatio * 0.28;
+        if (this.rightLegPivot) {
+          this.rightLegPivot.rotation.x = -windRatio * 1.5; // Dobla rodilla hacia el pecho
+          this.rightLegPivot.position.y = 1.35 + windRatio * 0.25;
+        }
+        if (this.pointingArm) {
+          this.pointingArm.position.z = 0.4 - windRatio * 0.35; // Tensa el brazo hacia atrás
+        }
+      } else if (kickProgress < 0.50) {
+        // ETAPA 2: SNAP EXPLOSIVO (DISPARO) - Latigazo en menos de 150ms
+        const snapRatio = (kickProgress - 0.35) / 0.15;
+        if (this.patoLemus) this.patoLemus.rotation.x = -0.28 + snapRatio * 0.45;
+        if (this.rightLegPivot) {
+          this.rightLegPivot.rotation.x = -1.5 + snapRatio * 3.35; // De -1.5 a +1.85 (estocada)
+          this.rightLegPivot.position.y = 1.6 - snapRatio * 0.25;
+        }
+        if (this.pointingArm) {
+          this.pointingArm.position.z = 0.05 + snapRatio * 0.45;
+        }
+      } else if (kickProgress < 0.70) {
+        // ETAPA 3: HIT-STOP & IMPACTO CÓMICO ¡POW!
+        if (this.rightLegPivot) this.rightLegPivot.rotation.x = 1.85;
+        this.powStar.visible = true;
+        const pulse = 1.4 + Math.sin((kickProgress - 0.5) * 35) * 0.4;
+        this.powStar.scale.set(pulse * 1.6, pulse * 1.6, 0.6);
+        this.powStar.rotation.z += dt * 15;
 
-          if (!this.kickSoundPlayed) {
-            this.kickSoundPlayed = true;
-            audio.playKickImpact();
-          }
+        // Micro-sacudida de pantalla (Screen Shake)
+        this.camera.position.x = -0.65 + (Math.random() - 0.5) * 0.3;
+        this.camera.position.y = ey + 1.70 + (Math.random() - 0.5) * 0.3;
 
-          // Frogbert se sobresalta
-          this.player.eyelids.forEach(el => { el.rotation.x = -Math.PI / 2; });
-        } else {
-          this.powStar.visible = false;
+        if (!this.kickSoundPlayed) {
+          this.kickSoundPlayed = true;
+          audio.playKickImpact();
+        }
+
+        // Frogbert ojos desorbitados y compresión cómica de impacto
+        this.player.eyelids.forEach(el => { el.rotation.x = -Math.PI / 2; });
+        this.player.mesh.scale.set(0.9, 0.55, 0.9);
+      } else {
+        // ETAPA 4: SEGUIMIENTO & POSE DE VICTORIA ARROGANTE
+        this.powStar.visible = false;
+        if (this.patoLemus) this.patoLemus.rotation.x = 0;
+        if (this.rightLegPivot) {
+          this.rightLegPivot.rotation.x = THREE.MathUtils.lerp(this.rightLegPivot.rotation.x, 0, dt * 8);
+          this.rightLegPivot.position.y = 1.35;
+        }
+        // Risa de villano de Pato Lemus viendo caer a Frogbert
+        if (this.patoLemus) {
+          this.patoLemus.position.y = ey + 0.45 + Math.sin(this.time * 14) * 0.06;
         }
       }
 
-    } else if (this.time < 10.2) {
-      // FASE 3: VUELO EN ARCO PARABÓLICO DE FROGBERT
+    } else if (this.time < 11.4) {
+      // FASE 3: CAÍDA LIBRE VERTICAL EN PICADA (38 METROS DESDE LA COPA HASTA LA BASE)
       this.phase = 'flight';
       this.player.mesh.scale.set(1, 1, 1);
       this.powStar.visible = false;
       this.flightTime += dt;
-      const progress = Math.min(1.0, this.flightTime / 2.6);
+      const progress = Math.min(1.0, this.flightTime / 3.6);
 
-      // Curva Bezier parabólica
-      const invT = 1.0 - progress;
-      const x = invT * invT * this.flightStartPos.x + 2 * invT * progress * this.flightPeakPos.x + progress * progress * this.flightEndPos.x;
-      const y = invT * invT * this.flightStartPos.y + 2 * invT * progress * this.flightPeakPos.y + progress * progress * this.flightEndPos.y;
-      const z = invT * invT * this.flightStartPos.z + 2 * invT * progress * this.flightPeakPos.z + progress * progress * this.flightEndPos.z;
+      // Descenso cúbico acelerado por la gravedad
+      const t = progress;
+      const invT = 1.0 - t;
+
+      // Puntos de control de la curva: Salida copa (39m) -> Salto inicial (42m) -> Caída media (20m) -> Base (1.6m)
+      const p0 = this.flightStartPos;
+      const p1 = this.flightApexPos;
+      const p2 = this.flightMidPos;
+      const p3 = this.flightEndPos;
+
+      const c0 = invT * invT * invT;
+      const c1 = 3 * invT * invT * t;
+      const c2 = 3 * invT * t * t;
+      const c3 = t * t * t;
+
+      const x = c0 * p0.x + c1 * p1.x + c2 * p2.x + c3 * p3.x;
+      const y = c0 * p0.y + c1 * p1.y + c2 * p2.y + c3 * p3.y;
+      const z = c0 * p0.z + c1 * p1.z + c2 * p2.z + c3 * p3.z;
 
       this.player.position.set(x, y, z);
       this.player.mesh.position.copy(this.player.position);
 
-      // Giros cómicamente frenéticos
-      this.player.mesh.rotation.x += dt * 14;
-      this.player.mesh.rotation.z += dt * 8;
+      // Giros frenéticos de pánico anfibio
+      this.player.mesh.rotation.x += dt * 16;
+      this.player.mesh.rotation.z += dt * 10;
+      this.player.mesh.rotation.y += dt * 6;
 
-      // Cámara siguiendo el vuelo
-      this.camera.position.set(x + 5.5, y + 3.5, z + 6.0);
+      // Cámara en picada vertiginosa persiguiendo la caída pegada al tronco
+      this.camera.position.set(x + 5.2, y + 4.2, z + 7.5);
       this.camera.lookAt(this.player.position);
 
       if (!this.flightSoundPlayed) {
@@ -657,26 +722,26 @@ export class CinematicIntro {
         audio.playFlightWhoosh();
       }
 
-    } else if (this.time < 11.8) {
+    } else if (this.time < 12.8) {
       // FASE 4: ATERRIZAJE FORZOSO EN LA BASE DEL ÁRBOL
       this.phase = 'crash';
       this.player.position.copy(this.flightEndPos);
       this.player.mesh.position.copy(this.player.position);
       this.player.mesh.rotation.set(0, Math.PI, 0);
 
-      this.camera.position.lerp(new THREE.Vector3(0, 3.2, 16.5), 0.1);
+      this.camera.position.lerp(new THREE.Vector3(0, 3.2, 16.5), 0.12);
       this.camera.lookAt(this.player.position);
 
       if (!this.crashSoundPlayed) {
         this.crashSoundPlayed = true;
         audio.playCrashLanding();
         if (this.player.particles) {
-          this.player.particles.spawnDustPuff(this.player.position, 16, 0x5d4037);
+          this.player.particles.spawnDustPuff(this.player.position, 24, 0x5d4037);
         }
       }
 
-    } else if (this.time < 16.5) {
-      // FASE 5: FROGBERT ENFURECIDO ENTREGA SU MONÓLOGO
+    } else if (this.time < 17.5) {
+      // FASE 5: FROGBERT ENFURECIDO ENTREGA SU MONÓLOGO DE VENGANZA
       this.phase = 'angry';
       this.player.position.copy(this.flightEndPos);
       this.player.mesh.position.copy(this.player.position);
@@ -684,8 +749,8 @@ export class CinematicIntro {
       this.player.setAngryPose(true);
       this.player.mesh.rotation.set(0, 0, 0);
 
-      // Partículas de vapor de ira saliendo de la cabeza
-      if (Math.random() < 0.25 && this.player.particles) {
+      // Partículas de humo saliendo de la cabeza de Frogbert
+      if (Math.random() < 0.28 && this.player.particles) {
         const steamPos = this.player.position.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.4, 1.2, 0));
         this.player.particles.spawnDustPuff(steamPos, 2, 0xffffff);
       }
@@ -696,7 +761,7 @@ export class CinematicIntro {
       if (this.hud && this.hud.dialogueBox.style.display !== 'flex') {
         this.hud.showDialogue(
           'FROGBERT',
-          '¡GRRR! ¡Maldito Pato Lemus y sus hojalatas de TALACORP! ¡Pisotearon mi siesta y talaron mi bosque sagrado! ¡Subiré hasta la cima de este árbol y le daré su merecido a patadas!'
+          '¡GRRR! ¡Maldito Pato Lemus y su corporación TALACORP! ¡Lanzarme desde lo alto del árbol no te salvará! ¡Subiré de vuelta hasta la cima y recuperaré mi hogar!'
         );
       }
 

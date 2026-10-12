@@ -8,6 +8,7 @@ import { ThirdPersonCamera } from './camera.js';
 import { ParticleSystem } from './particles.js';
 import { HUD } from './hud.js';
 import { CinematicIntro } from './cinematic.js';
+import { SummitCutscene } from './summit-cutscene.js';
 
 class Game {
   constructor() {
@@ -26,6 +27,7 @@ class Game {
     this.boss = null;
     this.particles = null;
     this.cinematic = null;
+    this.summitCutscene = null;
 
     this.clock = new THREE.Clock();
     this.dialogueTriggeredMid = false;
@@ -158,8 +160,13 @@ class Game {
     this.boss.state = 'idle';
     this.boss.mesh.visible = true;
     this.boss.mesh.scale.set(1, 1, 1);
+    this.boss.mesh.position.copy(this.boss.arenaCenter);
     this.dialogueTriggeredMid = false;
     this.dialogueTriggeredBoss = false;
+    if (this.summitCutscene) {
+      this.summitCutscene.finish();
+      this.summitCutscene = null;
+    }
     this.state = 'playing';
   }
 
@@ -176,6 +183,18 @@ class Game {
         this.cinematic.skip();
       }
     } else if (this.state === 'playing') {
+      // Cinemática en la cima del árbol (Pato Lemus y el Helicóptero)
+      if (this.summitCutscene && this.summitCutscene.isActive) {
+        this.particles.update(dt);
+        this.summitCutscene.update(dt);
+        if (this.input.keys.jumpPressed && this.hud.dialogueBox.style.display !== 'flex') {
+          this.summitCutscene.skip();
+        }
+        this.renderer.render(this.scene, this.camera);
+        this.input.resetOneShots();
+        return;
+      }
+
       if (this.input.mouse.deltaX !== 0 || this.input.mouse.deltaY !== 0) {
         this.tpCamera.handleMouseMove(this.input.mouse.deltaX, this.input.mouse.deltaY);
       }
@@ -193,14 +212,33 @@ class Game {
       const height = this.player.position.y;
       if (height > 36) {
         audio.setTrack('boss');
-        this.boss.update(dt, this.player, this.tpCamera);
+        this.boss.update(dt, this.player, this.tpCamera, this.input);
 
         if (!this.dialogueTriggeredBoss) {
           this.dialogueTriggeredBoss = true;
-          this.hud.showDialogue(
-            'BUG-ZAPPER 3000',
-            '¡BEEP-BOOP! ¡PLAGA ANFIBIA DETECTADA! ¡INICIANDO PROTOCOLO DE EXTERMINACIÓN DE TALACORP!'
+          this.summitCutscene = new SummitCutscene(
+            this.scene,
+            this.camera,
+            this.player,
+            this.boss,
+            this.hud,
+            () => {
+              this.summitCutscene = null;
+              this.tpCamera.resetPosition();
+            }
           );
+        }
+
+        // Guía dinámica durante el agarre estilo Mario vs Bowser
+        const controlsHint = document.getElementById('controls-hint');
+        if (controlsHint) {
+          if (this.boss.state === 'grabbed') {
+            controlsHint.innerHTML = '💥 <b>¡AGARRADO!</b> [A/D o Ratón]: Girar más rápido &nbsp;|&nbsp; <b>[ESPACIO / Clic]: LANZAR A UNA MINA CON PÚAS</b>';
+            controlsHint.style.borderColor = '#f1c40f';
+          } else if (this.boss.state === 'dizzy') {
+            controlsHint.innerHTML = '⚡ <b>¡TALABOT ATURDIDO!</b> Acércate por la espalda o dispara tu lengua <b>[E / Clic]</b> a su cola para agarrarlo';
+            controlsHint.style.borderColor = '#2ecc71';
+          }
         }
 
         if (this.boss.state === 'defeated') {

@@ -96,7 +96,7 @@ body, html {
 .rare-text {
   color: #facc15;
   text-shadow: 2px 2px 0px #b45309, 3px 3px 0px #000;
-  letter-spacing: 1px;
+  letter-spacing: normal;
 }
 
 /* Altímetro */
@@ -126,7 +126,7 @@ body, html {
   font-family: inherit;
   font-size: 14px;
   font-weight: 900;
-  letter-spacing: 1px;
+  letter-spacing: normal;
   text-shadow: 2px 2px 0px #000;
   display: none;
   align-items: center;
@@ -154,7 +154,7 @@ body, html {
   font-size: 20px;
   filter: drop-shadow(2px 2px 0px #000);
   display: inline-block;
-  animation: iconBounce 0.8s infinite alternate ease-in-out;
+  animation: iconPulse 1.2s infinite alternate ease-in-out;
 }
 
 #interact-prompt {
@@ -162,9 +162,9 @@ body, html {
   pointer-events: none;
 }
 
-@keyframes iconBounce {
-  from { transform: translateY(0); }
-  to { transform: translateY(-4px); }
+@keyframes iconPulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.15); }
 }
 
 /* Barra de Vida del Jefe */
@@ -232,10 +232,10 @@ body, html {
 
 #dialogue-speaker {
   font-size: 15px;
-  color: #d35400;
+  color: #b83e00;
   text-transform: uppercase;
   font-weight: 900;
-  letter-spacing: 2px;
+  letter-spacing: 0.04em;
 }
 
 #dialogue-content {
@@ -243,12 +243,12 @@ body, html {
   color: #18243b;
   line-height: 1.6;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: normal;
 }
 
 .dialogue-hint {
   font-size: 15px;
-  color: #2980b9;
+  color: #1e40af;
   align-self: flex-end;
   margin-top: 2px;
   animation: blink 0.8s infinite;
@@ -287,7 +287,7 @@ body, html {
 .subtitle-n64 {
   font-size: 13px;
   color: #f1c40f;
-  letter-spacing: 2px;
+  letter-spacing: 0.04em;
   text-shadow: 2px 2px 0px #000;
   margin-top: -12px;
   margin-bottom: 22px;

@@ -382,8 +382,14 @@ export class Player {
           }
         } else if (this.tongueTargetType === 'boss') {
           this.tongueState = 'retracting';
-          if (boss) boss.takeHit();
-          this.hitstopTimer = 0.08; // Hitstop de 80ms en jefe
+          if (boss) {
+            if (boss.startGrab) {
+              boss.startGrab(this);
+            } else if (boss.takeHit) {
+              boss.takeHit();
+            }
+          }
+          this.hitstopTimer = 0.08;
           if (this.particles) this.particles.spawnSparks(this.tongueAnchorPos, 14);
           if (camera) camera.addTrauma(0.5);
         } else {
