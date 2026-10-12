@@ -12,7 +12,7 @@ export class CinematicIntro {
 
     this.isActive = true;
     this.time = 0;
-    this.phase = 'confrontation'; // confrontation -> kick -> flight -> crash -> angry -> finish
+    this.phase = 'sleeping'; // sleeping -> wake_up -> confrontation -> kick -> flight -> crash -> angry -> finish
 
     // Contenedores 3D de la cinemática
     this.cinematicGroup = new THREE.Group();
@@ -22,14 +22,21 @@ export class CinematicIntro {
     this.patoLemus = null;
     this.rightLegPivot = null;
     this.pointingArm = null;
+    this.talabots = [];
     this.powStar = null;
+    this.zzzSprites = [];
     this.lanternLights = [];
+    this.sleepingMat = null;
+
+    // Control de sueño y despertar
+    this.snoreTimer = 0;
+    this.wokeUp = false;
 
     // Elevación a la copa del Árbol Sagrado (y ≈ 38.5m)
     this.elevationY = 38.5;
 
     // Trayectoria de vuelo y caída libre de Frogbert desde la copa hasta la base
-    this.flightStartPos = new THREE.Vector3(-1.75, this.elevationY + 0.55, 26.8);
+    this.flightStartPos = new THREE.Vector3(-1.75, this.elevationY + 0.35, 26.8);
     this.flightApexPos = new THREE.Vector3(0, this.elevationY + 3.2, 24.0);
     this.flightMidPos = new THREE.Vector3(1.2, 19.5, 17.5);
     this.flightEndPos = new THREE.Vector3(0, 1.6, 11.0);
@@ -118,16 +125,60 @@ export class CinematicIntro {
     this.patoLemus.rotation.set(0, -0.22, 0); // Orientación de 3/4 majestuosa
     this.cinematicGroup.add(this.patoLemus);
 
-    // 6. FROGBERT EN PRIMER PLANO (Esquina inferior izquierda, mirando hacia Pato Lemus desde atrás)
-    this.flightStartPos.set(-1.75, ey + 0.55, 26.8);
+    // TALABOTS ESCOLTAS DE TALACORP (Flanqueando a Pato Lemus)
+    const talabotLeft = this.createTalabotModel(-1);
+    talabotLeft.position.set(-2.8, ey + 0.45, 21.6);
+    talabotLeft.rotation.y = 0.35;
+    this.cinematicGroup.add(talabotLeft);
+    this.talabots.push(talabotLeft);
+
+    const talabotRight = this.createTalabotModel(1);
+    talabotRight.position.set(3.4, ey + 0.45, 21.6);
+    talabotRight.rotation.y = -0.35;
+    this.cinematicGroup.add(talabotRight);
+    this.talabots.push(talabotRight);
+
+    // 6. ESTERILLA DE HOJAS Y ALMOHADITA DE SIESTA DE FROGBERT
+    const leafMat = new THREE.MeshLambertMaterial({ color: 0x27ae60, flatShading: true });
+    const sleepingDeck = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.12, 2.6), leafMat);
+    sleepingDeck.position.set(-1.75, ey + 0.12, 26.8);
+    this.cinematicGroup.add(sleepingDeck);
+    this.sleepingMat = sleepingDeck;
+
+    const pillowMat = new THREE.MeshLambertMaterial({ color: 0x2ecc71, flatShading: true });
+    const pillow = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 1.4, 8), pillowMat);
+    pillow.rotation.z = Math.PI / 2;
+    pillow.position.set(-1.75, ey + 0.22, 25.8);
+    this.cinematicGroup.add(pillow);
+
+    // FROGBERT EN SU SIESTA SAGRADA (Ojos cerrados, tumbado plácidamente)
+    this.flightStartPos.set(-1.75, ey + 0.35, 26.8);
     this.player.position.copy(this.flightStartPos);
     this.player.mesh.position.copy(this.player.position);
     this.player.mesh.scale.set(0.72, 0.72, 0.72);
     this.player.mesh.rotation.set(-0.15, 2.95, 0);
-    this.player.setSleepingPose(false);
+    this.player.setSleepingPose(true);
     this.player.setAngryPose(false);
-    this.player.eyelids.forEach(el => { el.rotation.x = -Math.PI / 2.2; });
     if (this.player.backpack) this.player.backpack.visible = true;
+
+    // LETRAS Zzz CÓMICAS FLOTANTES (Pixel-art estilo Rareware)
+    this.zzzSprites = [];
+    const zTexts = ['Z', 'z', 'Z'];
+    const zScales = [0.45, 0.35, 0.55];
+    for (let i = 0; i < 3; i++) {
+      const zTex = Textures.createZzzTexture(zTexts[i]);
+      const zSpriteMat = new THREE.SpriteMaterial({ map: zTex, transparent: true, depthWrite: false });
+      const zSprite = new THREE.Sprite(zSpriteMat);
+      zSprite.scale.set(zScales[i], zScales[i], 1);
+      zSprite.position.set(-1.6 + i * 0.25, ey + 0.95 + i * 0.35, 26.8);
+      this.cinematicGroup.add(zSprite);
+      this.zzzSprites.push({
+        sprite: zSprite,
+        baseX: -1.6 + i * 0.25,
+        offset: i * 0.55,
+        scale: zScales[i]
+      });
+    }
 
     // 7. ESTRELLA DE IMPACTO CÓMICA ¡POW!
     const powGeo = new THREE.DodecahedronGeometry(0.55, 0);
@@ -138,17 +189,17 @@ export class CinematicIntro {
     this.powStar.visible = false;
     this.cinematicGroup.add(this.powStar);
 
-    // 8. CÁMARA: ENCUADRE CONTRAPICADO EXACTO A LA IMAGEN DE REFERENCIA
-    this.camera.position.set(-0.65, ey + 1.70, 29.2);
-    this.camera.lookAt(0.35, ey + 2.70, 22.4);
-    this.camera.fov = 52;
+    // 8. CÁMARA INICIAL: PRIMER PLANO CÁLIDO DE FROGBERT DURMIENDO EN LA COPA
+    this.camera.position.set(-0.85, ey + 1.25, 29.2);
+    this.camera.lookAt(-1.75, ey + 0.55, 26.8);
+    this.camera.fov = 50;
     this.camera.updateProjectionMatrix();
 
-    // Diálogo inicial exacto de Pato Lemus
+    // Diálogo inicial de Frogbert durmiendo
     if (this.hud) {
       this.hud.showDialogue(
-        'PATO LEMUS',
-        '¡CROAK, PEQUEÑA RANA...!\nESTE BOSQUE YA TIENE DUEÑO.\nTALACORP LO HACE MÁS GRANDE... AUNQUE TENGA QUE SECARLO.'
+        'FROGBERT',
+        'Zzz... Zzz... Qué sabrosa siesta en lo alto del Árbol Sagrado... Zzz...'
       );
     }
   }
@@ -579,12 +630,61 @@ export class CinematicIntro {
     return foot;
   }
 
+  createTalabotModel(side = 1) {
+    const talabot = new THREE.Group();
+    const metalMat = new THREE.MeshLambertMaterial({ map: Textures.createTalabotMetal(), flatShading: true });
+    const visorMat = new THREE.MeshBasicMaterial({ color: 0xff3838 });
+    const darkMetalMat = new THREE.MeshLambertMaterial({ color: 0x222f3e, flatShading: true });
+
+    // Cuerpo mecánico cuadrangular
+    const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.4, 1.0), metalMat);
+    body.position.y = 1.4;
+    talabot.add(body);
+
+    // Cabeza angular con visor rojo de amenaza
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.6, 0.8), darkMetalMat);
+    head.position.set(0, 2.3, 0.1);
+    talabot.add(head);
+
+    const visor = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.18, 0.1), visorMat);
+    visor.position.set(0, 2.3, 0.52);
+    talabot.add(visor);
+
+    // Tubo de escape trasero
+    const exhaust = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.8, 6), darkMetalMat);
+    exhaust.position.set(0.35 * side, 2.2, -0.45);
+    exhaust.rotation.x = -0.3;
+    talabot.add(exhaust);
+
+    // Brazo con sierra mecánica circular giratoria
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.9, 0.28), darkMetalMat);
+    arm.position.set(0.85 * side, 1.3, 0.3);
+    arm.rotation.x = -0.5;
+    talabot.add(arm);
+
+    const saw = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.65, 0.08, 12), metalMat);
+    saw.position.set(0.85 * side, 0.75, 0.7);
+    saw.rotation.z = Math.PI / 2;
+    talabot.add(saw);
+    talabot.sawBlade = saw;
+
+    // Patas mecánicas
+    [-0.45, 0.45].forEach(x => {
+      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.8, 0.6), darkMetalMat);
+      leg.position.set(x, 0.4, 0);
+      talabot.add(leg);
+    });
+
+    talabot.scale.set(1.1, 1.1, 1.1);
+    return talabot;
+  }
+
   update(dt) {
     if (!this.isActive) return;
 
     this.time += dt;
 
-    // Sutil respiración del dedo apuntando
+    // Sutil respiración del dedo apuntando durante la confrontación
     if (this.pointingArm && this.phase === 'confrontation') {
       this.pointingArm.rotation.y = Math.sin(this.time * 3.5) * 0.05;
     }
@@ -592,8 +692,95 @@ export class CinematicIntro {
     const ey = this.elevationY;
 
     // MÁQUINA DE ESTADOS DE LA CINEMÁTICA
-    if (this.time < 5.8) {
-      // FASE 1: CONFRONTACIÓN ÉPICA EN LA COPA DEL ÁRBOL SAGRADO
+    if (this.time < 3.8) {
+      // FASE 0: FROGBERT DORMIDO PLÁCIDAMENTE EN LA COPA DEL ÁRBOL (0.0s - 3.8s)
+      this.phase = 'sleeping';
+
+      // Cámara en primer plano cálido de Frogbert roncando
+      this.camera.position.set(-0.85, ey + 1.25, 29.2);
+      this.camera.lookAt(-1.75, ey + 0.55, 26.8);
+
+      // Respiración sutil de la ranita dormida
+      if (this.player.modelContainer) {
+        this.player.modelContainer.scale.y = 1.0 + Math.sin(this.time * 3.2) * 0.06;
+      }
+
+      // Animación de letras Zzz flotantes
+      this.zzzSprites.forEach(item => {
+        const cycle = (this.time * 0.8 + item.offset) % 1.6;
+        item.sprite.position.y = ey + 0.85 + cycle;
+        item.sprite.position.x = item.baseX + Math.sin(this.time * 2.8 + item.offset) * 0.12;
+        const alpha = Math.sin((cycle / 1.6) * Math.PI);
+        item.sprite.material.opacity = Math.max(0, alpha);
+        const sc = item.scale * (0.85 + alpha * 0.25);
+        item.sprite.scale.set(sc, sc, 1);
+      });
+
+      // Sonido tierno de ronquido
+      this.snoreTimer += dt;
+      if (this.snoreTimer >= 1.8) {
+        this.snoreTimer = 0;
+        audio.playFrogSnore();
+      }
+
+      if (this.hud && this.hud.dialogueBox.style.display !== 'flex') {
+        this.hud.showDialogue(
+          'FROGBERT',
+          'Zzz... Zzz... Qué sabrosa siesta en lo alto del Árbol Sagrado... Zzz...'
+        );
+      }
+
+    } else if (this.time < 6.0) {
+      // FASE 1: DESPERTAR SOBRESALTADO & TRANSICIÓN DE CÁMARA (3.8s - 6.0s)
+      this.phase = 'wake_up';
+
+      // Ocultar Zzz
+      this.zzzSprites.forEach(item => { item.sprite.visible = false; });
+
+      // Transición fluida de cámara desde el plano cercano al contrapicado épico de referencia
+      const tWake = (this.time - 3.8) / 2.2;
+      const easeT = tWake * tWake * (3 - 2 * tWake);
+      this.camera.position.set(
+        THREE.MathUtils.lerp(-0.85, -0.65, easeT),
+        THREE.MathUtils.lerp(ey + 1.25, ey + 1.70, easeT),
+        THREE.MathUtils.lerp(29.2, 29.2, easeT)
+      );
+      const lookX = THREE.MathUtils.lerp(-1.75, 0.35, easeT);
+      const lookY = THREE.MathUtils.lerp(ey + 0.55, ey + 2.70, easeT);
+      const lookZ = THREE.MathUtils.lerp(26.8, 22.4, easeT);
+      this.camera.lookAt(lookX, lookY, lookZ);
+
+      // Despertar sobresaltado
+      if (!this.wokeUp) {
+        this.wokeUp = true;
+        audio.playStartledGasp();
+        this.player.setSleepingPose(false);
+        this.player.eyelids.forEach(el => { el.rotation.x = -Math.PI / 1.9; });
+        this.player.mesh.rotation.set(-0.15, 2.95, 0);
+      }
+
+      // Pequeño salto cómico de susto
+      if (this.time < 4.6) {
+        const hopRatio = (this.time - 3.8) / 0.8;
+        this.player.mesh.position.y = ey + 0.55 + Math.sin(hopRatio * Math.PI) * 0.4;
+      } else {
+        this.player.mesh.position.y = ey + 0.55;
+      }
+
+      // Sierras de Talabots acelerando
+      this.talabots.forEach(tb => {
+        if (tb.sawBlade) tb.sawBlade.rotation.x += dt * 10;
+      });
+
+      if (this.hud && this.time > 4.2 && this.hud.dialogueBox.innerText.indexOf('ruido') === -1) {
+        this.hud.showDialogue(
+          'FROGBERT',
+          '¿¡EH...!? ¿¡Qué es ese ruido estridente?! ¿¡Quiénes son ustedes y qué hacen en mi árbol?!'
+        );
+      }
+
+    } else if (this.time < 10.5) {
+      // FASE 2: CONFRONTACIÓN ÉPICA EN LA COPA DEL ÁRBOL SAGRADO (6.0s - 10.5s)
       this.phase = 'confrontation';
 
       // Cámara fija en ángulo bajo contrapicado idéntico a la referencia
@@ -601,26 +788,31 @@ export class CinematicIntro {
       this.camera.lookAt(0.35, ey + 2.70, 22.4);
 
       // Frogbert en primer plano mirando hacia Pato Lemus desde atrás
-      this.player.position.copy(this.flightStartPos);
+      this.player.position.set(-1.75, ey + 0.55, 26.8);
       this.player.mesh.position.copy(this.player.position);
       this.player.mesh.scale.set(0.72, 0.72, 0.72);
       this.player.mesh.rotation.set(-0.15, 2.95, 0);
 
-      if (this.hud && this.hud.dialogueBox.style.display !== 'flex') {
+      // Sierras amenazantes de los Talabots
+      this.talabots.forEach(tb => {
+        if (tb.sawBlade) tb.sawBlade.rotation.x += dt * 18;
+      });
+
+      if (this.hud && this.hud.dialogueBox.innerText.indexOf('DUEÑO') === -1) {
         this.hud.showDialogue(
           'PATO LEMUS',
-          '¡CROAK, PEQUEÑA RANA...!\nESTE BOSQUE YA TIENE DUEÑO.\nTALACORP LO HACE MÁS GRANDE... AUNQUE TENGA QUE SECARLO.'
+          '¡CROAK, PEQUEÑA RANA...!\nESTE BOSQUE YA TIENE DUEÑO.\nTALACORP LO HACE MÁS GRANDE... AUNQUE TENGA QUE SECARLO TODO.\n¡Y TÚ ESTÁS DESPEDIDO DE ESTE ÁRBOL!'
         );
       }
 
-    } else if (this.time < 7.6) {
-      // FASE 2: ANIMACIÓN IMPECABLE DE PATADA (/impeccable)
+    } else if (this.time < 12.3) {
+      // FASE 3: ANIMACIÓN IMPECABLE DE PATADA (/impeccable) (10.5s - 12.3s)
       this.phase = 'kick';
       if (this.hud && this.hud.dialogueBox.style.display === 'flex') {
         this.hud.closeDialogue();
       }
 
-      const kickProgress = (this.time - 5.8) / 1.8;
+      const kickProgress = (this.time - 10.5) / 1.8;
 
       if (kickProgress < 0.35) {
         // ETAPA 1: ANTICIPACIÓN (WINDUP) - Carga hacia atrás con flexión de rodilla
@@ -678,13 +870,13 @@ export class CinematicIntro {
         }
       }
 
-    } else if (this.time < 11.4) {
-      // FASE 3: CAÍDA LIBRE VERTICAL EN PICADA (38 METROS DESDE LA COPA HASTA LA BASE)
+    } else if (this.time < 16.0) {
+      // FASE 4: CAÍDA LIBRE VERTICAL EN PICADA (38 METROS DESDE LA COPA HASTA LA BASE) (12.3s - 16.0s)
       this.phase = 'flight';
       this.player.mesh.scale.set(1, 1, 1);
       this.powStar.visible = false;
       this.flightTime += dt;
-      const progress = Math.min(1.0, this.flightTime / 3.6);
+      const progress = Math.min(1.0, this.flightTime / 3.7);
 
       // Descenso cúbico acelerado por la gravedad
       const t = progress;
@@ -722,8 +914,8 @@ export class CinematicIntro {
         audio.playFlightWhoosh();
       }
 
-    } else if (this.time < 12.8) {
-      // FASE 4: ATERRIZAJE FORZOSO EN LA BASE DEL ÁRBOL
+    } else if (this.time < 17.5) {
+      // FASE 5: ATERRIZAJE FORZOSO EN LA BASE DEL ÁRBOL (16.0s - 17.5s)
       this.phase = 'crash';
       this.player.position.copy(this.flightEndPos);
       this.player.mesh.position.copy(this.player.position);
@@ -740,8 +932,8 @@ export class CinematicIntro {
         }
       }
 
-    } else if (this.time < 17.5) {
-      // FASE 5: FROGBERT ENFURECIDO ENTREGA SU MONÓLOGO DE VENGANZA
+    } else if (this.time < 22.0) {
+      // FASE 6: FROGBERT ENFURECIDO ENTREGA SU MONÓLOGO DE VENGANZA (17.5s - 22.0s)
       this.phase = 'angry';
       this.player.position.copy(this.flightEndPos);
       this.player.mesh.position.copy(this.player.position);
@@ -761,12 +953,12 @@ export class CinematicIntro {
       if (this.hud && this.hud.dialogueBox.style.display !== 'flex') {
         this.hud.showDialogue(
           'FROGBERT',
-          '¡GRRR! ¡Maldito Pato Lemus y su corporación TALACORP! ¡Lanzarme desde lo alto del árbol no te salvará! ¡Subiré de vuelta hasta la cima y recuperaré mi hogar!'
+          '¡GRRR! ¡Maldito Pato Lemus y su corporación TALACORP! ¡Pisotearon mi siesta y me lanzaron desde la copa del árbol! ¡Subiré de vuelta hasta la cima y recuperaré mi hogar!'
         );
       }
 
     } else {
-      // FASE 6: FIN DE CINEMÁTICA Y PASO A GAMEPLAY ACTIVO
+      // FASE 7: FIN DE CINEMÁTICA Y PASO A GAMEPLAY ACTIVO
       this.finish();
     }
   }

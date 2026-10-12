@@ -608,6 +608,46 @@ class AudioManager {
       osc.stop(now + offset + 0.18);
     });
   }
+
+  // SFX: Ronquido tierno de Frogbert durmiendo plácidamente (Zzz...)
+  playFrogSnore() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.linearRampToValueAtTime(190, now + 0.35);
+    osc.frequency.linearRampToValueAtTime(120, now + 0.7);
+
+    gain.gain.setValueAtTime(0.01, now);
+    gain.gain.linearRampToValueAtTime(0.16, now + 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.76);
+  }
+
+  // SFX: Sobresalto cómico al despertar repentinamente (¡¿Eh?!)
+  playStartledGasp() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(260, now);
+    osc.frequency.exponentialRampToValueAtTime(560, now + 0.16);
+
+    gain.gain.setValueAtTime(0.35, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.19);
+  }
 }
 
 export const audio = new AudioManager();

@@ -643,5 +643,36 @@ export const Textures = {
     tex.magFilter = THREE.NearestFilter;
     tex.minFilter = THREE.NearestFilter;
     return tex;
+  },
+
+  // Letras Z cómica estilo pixel-art para el sueño de Frogbert
+  createZzzTexture(text = 'Z') {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 64, 64);
+
+    // Fondo circular suave de burbuja
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.beginPath();
+    ctx.arc(32, 32, 28, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Sombra del texto
+    ctx.font = '900 36px "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#0f2027';
+    ctx.fillText(text, 34, 34);
+
+    // Texto celeste brillante
+    ctx.fillStyle = '#74b9ff';
+    ctx.fillText(text, 32, 32);
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.magFilter = THREE.NearestFilter;
+    tex.minFilter = THREE.NearestFilter;
+    return tex;
   }
 };
