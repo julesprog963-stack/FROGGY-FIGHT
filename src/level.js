@@ -8,9 +8,6 @@ function createCylinderPlatform(mesh, radius, height) {
   const halfH = height * 0.5;
   box.min.set(mesh.position.x - radius, mesh.position.y - halfH, mesh.position.z - radius);
   box.max.set(mesh.position.x + radius, mesh.position.y + halfH, mesh.position.z + radius);
-  box.isCylinder = true;
-  box.radius = radius;
-  box.center = new THREE.Vector2(mesh.position.x, mesh.position.z);
   return {
     mesh,
     getBounds: () => box

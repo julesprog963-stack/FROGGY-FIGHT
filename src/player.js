@@ -491,7 +491,7 @@ export class Player {
       const t = Math.min(Math.max(this.position.y / 40.0, 0), 1.0);
       const trunkRadius = 10.5 - t * 2.0;
       const distXZ = Math.hypot(this.position.x, this.position.z);
-      const minTrunkDist = trunkRadius + 0.45;
+      const minTrunkDist = trunkRadius + 0.35;
       if (distXZ < minTrunkDist && distXZ > 0.001) {
         const nx = this.position.x / distXZ;
         const nz = this.position.z / distXZ;
@@ -506,64 +506,10 @@ export class Player {
       }
     }
 
-    // 2. Colisión lateral y de techo contra plataformas con espesor
-    const bodyRadius = 0.42;
-    platforms.forEach(p => {
-      const box = p.getBounds ? p.getBounds() : (p.box || (p.box = new THREE.Box3().setFromObject(p.mesh)));
-      if (box.isCylinder) return;
-
-      // Colisión lateral (bloquea caminar dentro de los escalones)
-      if (
-        this.position.y < box.max.y - 0.12 &&
-        this.position.y + 1.15 > box.min.y &&
-        this.position.x >= box.min.x - bodyRadius &&
-        this.position.x <= box.max.x + bodyRadius &&
-        this.position.z >= box.min.z - bodyRadius &&
-        this.position.z <= box.max.z + bodyRadius
-      ) {
-        const pushLeft = (this.position.x + bodyRadius) - box.min.x;
-        const pushRight = box.max.x - (this.position.x - bodyRadius);
-        const pushFront = (this.position.z + bodyRadius) - box.min.z;
-        const pushBack = box.max.z - (this.position.z - bodyRadius);
-        const minPush = Math.min(pushLeft, pushRight, pushFront, pushBack);
-
-        if (minPush === pushLeft) {
-          this.position.x = box.min.x - bodyRadius;
-          if (this.velocity.x > 0) this.velocity.x = 0;
-        } else if (minPush === pushRight) {
-          this.position.x = box.max.x + bodyRadius;
-          if (this.velocity.x < 0) this.velocity.x = 0;
-        } else if (minPush === pushFront) {
-          this.position.z = box.min.z - bodyRadius;
-          if (this.velocity.z > 0) this.velocity.z = 0;
-        } else {
-          this.position.z = box.max.z + bodyRadius;
-          if (this.velocity.z < 0) this.velocity.z = 0;
-        }
-      }
-
-      // Colisión de techo (bonk al saltar hacia el fondo de una plataforma superior)
-      if (this.velocity.y > 0) {
-        const headY = this.position.y + 1.2;
-        if (
-          headY >= box.min.y &&
-          headY <= box.min.y + 0.35 &&
-          this.position.x >= box.min.x - bodyRadius &&
-          this.position.x <= box.max.x + bodyRadius &&
-          this.position.z >= box.min.z - bodyRadius &&
-          this.position.z <= box.max.z + bodyRadius
-        ) {
-          this.position.y = box.min.y - 1.22;
-          this.velocity.y = -2.0;
-          audio.playLand();
-        }
-      }
-    });
-
-    // 3. Apoyo y aterrizaje vertical sobre plataformas (Anti-tunneling swept check)
+    // 2. Apoyo y aterrizaje vertical sobre plataformas (Detección continua fluida)
     this.wasGrounded = this.isGrounded;
     this.isGrounded = false;
-    const footRadius = 0.32;
+    const footRadius = 0.55;
 
     let bestGroundY = -9999;
     let bestPlatform = null;
@@ -573,38 +519,23 @@ export class Player {
 
       const box = p.getBounds ? p.getBounds() : (p.box || (p.box = new THREE.Box3().setFromObject(p.mesh)));
       
-      let inFootprint = false;
-      if (box.isCylinder) {
-        const distCenter = Math.hypot(this.position.x - box.center.x, this.position.z - box.center.z);
-        inFootprint = distCenter <= box.radius + footRadius;
-      } else {
-        inFootprint = (
-          this.position.x >= box.min.x - footRadius &&
-          this.position.x <= box.max.x + footRadius &&
-          this.position.z >= box.min.z - footRadius &&
-          this.position.z <= box.max.z + footRadius
-        );
-      }
+      // Huella horizontal sobre la plataforma
+      if (
+        this.position.x >= box.min.x - footRadius &&
+        this.position.x <= box.max.x + footRadius &&
+        this.position.z >= box.min.z - footRadius &&
+        this.position.z <= box.max.z + footRadius
+      ) {
+        const topY = box.max.y;
+        const dy = this.position.y - topY;
+        const fallStep = Math.max(0.65, Math.abs(this.velocity.y * dt) + 0.35);
 
-      if (!inFootprint) return;
-
-      const topY = box.max.y;
-
-      const fellOntoPlatform = (
-        this.velocity.y <= 0 &&
-        this.prevPosition.y >= topY - 0.15 &&
-        this.position.y <= topY + 0.25
-      );
-
-      const walkingOnPlatform = (
-        this.wasGrounded &&
-        Math.abs(this.position.y - topY) < 0.35
-      );
-
-      if (fellOntoPlatform || walkingOnPlatform) {
-        if (topY > bestGroundY) {
-          bestGroundY = topY;
-          bestPlatform = p;
+        // Aterrizaje suave o pisada sobre la plataforma
+        if (this.velocity.y <= 0 && dy >= -fallStep && dy <= 0.85) {
+          if (topY > bestGroundY) {
+            bestGroundY = topY;
+            bestPlatform = p;
+          }
         }
       }
     });
@@ -618,7 +549,7 @@ export class Player {
       // Impacto de aterrizaje
       if (!this.wasGrounded && previousVy < -4) {
         audio.playLand();
-        this.squashStretch.set(1.3, 0.65, 1.3);
+        this.squashStretch.set(1.25, 0.75, 1.25);
         if (this.particles) {
           this.particles.spawnDustPuff(this.position, 6);
         }
@@ -697,21 +628,13 @@ export class Player {
 
     platforms.forEach(p => {
       const box = p.getBounds ? p.getBounds() : (p.box || (p.box = new THREE.Box3().setFromObject(p.mesh)));
-      let inFootprint = false;
-      if (box.isCylinder) {
-        const distCenter = Math.hypot(this.position.x - box.center.x, this.position.z - box.center.z);
-        inFootprint = distCenter <= box.radius + checkRadius;
-      } else {
-        inFootprint = (
-          this.position.x >= box.min.x - checkRadius &&
-          this.position.x <= box.max.x + checkRadius &&
-          this.position.z >= box.min.z - checkRadius &&
-          this.position.z <= box.max.z + checkRadius
-        );
-      }
-
-      if (inFootprint) {
-        if (box.max.y <= this.position.y + 0.1 && box.max.y > groundY) {
+      if (
+        this.position.x >= box.min.x - checkRadius &&
+        this.position.x <= box.max.x + checkRadius &&
+        this.position.z >= box.min.z - checkRadius &&
+        this.position.z <= box.max.z + checkRadius
+      ) {
+        if (box.max.y <= this.position.y + 0.15 && box.max.y > groundY) {
           groundY = box.max.y;
         }
       }

@@ -29,6 +29,8 @@ class Game {
     this.dialogueTriggeredMid = false;
     this.dialogueTriggeredBoss = false;
 
+    window.__game = this;
+
     this.initThree();
     this.setupUI();
     this.animate();
