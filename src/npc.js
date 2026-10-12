@@ -27,6 +27,8 @@ export class NPC {
       this.createTurtleModel();
     } else if (this.type === 'opossum') {
       this.createOpossumModel();
+    } else if (this.type === 'mutant_fish') {
+      this.createMutantFishModel();
     }
   }
 
@@ -145,6 +147,66 @@ export class NPC {
     this.mesh.add(crutch);
   }
 
+  createMutantFishModel() {
+    // Pez Mutante Blinky con 3 ojos saltones y aletas tóxicas
+    const fishMat = new THREE.MeshLambertMaterial({ color: 0x00b894, flatShading: true });
+    const bellyMat = new THREE.MeshLambertMaterial({ color: 0x55efc4, flatShading: true });
+    const eyeWhiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const pupilMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const finMat = new THREE.MeshLambertMaterial({ color: 0x0984e3, flatShading: true });
+    const toxicGlowMat = new THREE.MeshBasicMaterial({ color: 0xa8ff78 });
+
+    // Cuerpo en forma de pez estilizado
+    const body = new THREE.Mesh(new THREE.DodecahedronGeometry(0.65, 1), fishMat);
+    body.scale.set(0.9, 0.85, 1.4);
+    body.position.y = 0.45;
+    this.mesh.add(body);
+
+    // Vientre más claro
+    const belly = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.35, 1.1), bellyMat);
+    belly.position.set(0, 0.25, 0.1);
+    this.mesh.add(belly);
+
+    // Tres ojos saltones independientes (Easter Egg clásico)
+    const eyeConfigs = [
+      { x: -0.38, y: 0.65, z: 0.55, scale: 0.22, pX: -0.05, pY: 0.05 },
+      { x: 0.38, y: 0.65, z: 0.55, scale: 0.22, pX: 0.05, pY: 0.05 },
+      { x: 0.0, y: 1.0, z: 0.35, scale: 0.26, pX: 0.0, pY: 0.08 } // Tercer ojo central
+    ];
+
+    eyeConfigs.forEach(cfg => {
+      const eyeBall = new THREE.Mesh(new THREE.SphereGeometry(cfg.scale, 8, 8), eyeWhiteMat);
+      eyeBall.position.set(cfg.x, cfg.y, cfg.z);
+      this.mesh.add(eyeBall);
+
+      const pupil = new THREE.Mesh(new THREE.SphereGeometry(cfg.scale * 0.45, 6, 6), pupilMat);
+      pupil.position.set(cfg.x + cfg.pX, cfg.y + cfg.pY, cfg.z + cfg.scale * 0.85);
+      this.mesh.add(pupil);
+    });
+
+    // Boca abierta sorprendida
+    const mouth = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.25, 6), pupilMat);
+    mouth.rotation.x = Math.PI / 2;
+    mouth.position.set(0, 0.4, 0.95);
+    this.mesh.add(mouth);
+
+    // Aleta dorsal espinosa
+    const dorsal = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.7, 4), finMat);
+    dorsal.position.set(0, 1.15, -0.2);
+    dorsal.rotation.x = -0.35;
+    this.mesh.add(dorsal);
+
+    // Cola batiente
+    this.tail = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.6, 0.5), finMat);
+    this.tail.position.set(0, 0.5, -0.9);
+    this.mesh.add(this.tail);
+
+    // Burbuja de gas tóxico que sube y brilla
+    const bubble = new THREE.Mesh(new THREE.SphereGeometry(0.14, 6, 6), toxicGlowMat);
+    bubble.position.set(0.15, 1.35, 0.2);
+    this.mesh.add(bubble);
+  }
+
   createPromptBubble() {
     // Indicador visual flotante "!" que rota sobre la cabeza
     const bubbleGeo = new THREE.BoxGeometry(0.25, 0.5, 0.25);
@@ -159,6 +221,13 @@ export class NPC {
     // Animación sutil de respiración o temblor
     if (this.head) {
       this.head.rotation.z = Math.sin(this.animTime * 2) * 0.08;
+    }
+    if (this.type === 'mutant_fish') {
+      this.mesh.position.y = this.position.y + Math.sin(this.animTime * 2.5) * 0.12;
+      this.mesh.rotation.z = Math.sin(this.animTime * 1.8) * 0.08;
+      if (this.tail) {
+        this.tail.rotation.y = Math.sin(this.animTime * 5.0) * 0.45;
+      }
     }
     if (this.promptMesh) {
       this.promptMesh.rotation.y += dt * 3.5;

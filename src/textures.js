@@ -299,5 +299,190 @@ export const Textures = {
     tex.magFilter = THREE.NearestFilter;
     tex.minFilter = THREE.NearestFilter;
     return tex;
+  },
+
+  // Afiche electoral de campaña de Pato Lemus
+  createCampaignPoster1() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 384;
+    const ctx = canvas.getContext('2d');
+
+    // Fondo azul político
+    ctx.fillStyle = '#0984e3';
+    ctx.fillRect(0, 0, 256, 384);
+
+    // Marco blanco y rojo
+    ctx.lineWidth = 10;
+    ctx.strokeStyle = '#d63031';
+    ctx.strokeRect(5, 5, 246, 374);
+
+    // Encabezado
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 22px monospace, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('★ VOTA LISTA 4 ★', 128, 42);
+
+    // Silueta caricaturesca de pato con corbata roja
+    ctx.fillStyle = '#f1c40f'; // Cabeza amarilla
+    ctx.beginPath();
+    ctx.arc(128, 115, 45, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#e67e22'; // Pico naranja
+    ctx.beginPath();
+    ctx.moveTo(150, 115);
+    ctx.lineTo(200, 125);
+    ctx.lineTo(150, 138);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#000000'; // Ojo astuto
+    ctx.beginPath();
+    ctx.arc(142, 105, 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(144, 103, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Traje y corbata
+    ctx.fillStyle = '#2d3436';
+    ctx.fillRect(88, 160, 80, 50);
+    ctx.fillStyle = '#d63031'; // Corbata roja
+    ctx.beginPath();
+    ctx.moveTo(128, 160);
+    ctx.lineTo(135, 205);
+    ctx.lineTo(128, 215);
+    ctx.lineTo(121, 205);
+    ctx.closePath();
+    ctx.fill();
+
+    // Nombre en letras gigantes
+    ctx.fillStyle = '#fdcb6e';
+    ctx.font = '900 28px monospace, sans-serif';
+    ctx.fillText('PATO LEMUS', 128, 250);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 18px monospace, sans-serif';
+    ctx.fillText('2026 - 2030', 128, 280);
+
+    // Eslogan satírico
+    ctx.fillStyle = '#ffeaa7';
+    ctx.fillRect(15, 300, 226, 60);
+    ctx.fillStyle = '#d63031';
+    ctx.font = 'bold 14px monospace, sans-serif';
+    ctx.fillText('“EL CANDIDATO QUE CUAC-MPLE”', 128, 325);
+    ctx.font = 'bold 12px monospace, sans-serif';
+    ctx.fillText('¡MÁS ASFALTO, MENOS RANA!', 128, 345);
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.magFilter = THREE.NearestFilter;
+    tex.minFilter = THREE.LinearFilter;
+    return tex;
+  },
+
+  // Afiche publicitario de progreso TALACORP & Lemus
+  createCampaignPoster2() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 384;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#2c3e50';
+    ctx.fillRect(0, 0, 256, 384);
+
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = '#f39c12';
+    ctx.strokeRect(4, 4, 248, 376);
+
+    ctx.fillStyle = '#e74c3c';
+    ctx.fillRect(10, 10, 236, 40);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 18px monospace, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('TALACORP & GOBIERNO', 128, 36);
+
+    ctx.fillStyle = '#f1c40f';
+    ctx.font = 'bold 22px monospace, sans-serif';
+    ctx.fillText('CONVIRTIENDO', 128, 85);
+    ctx.fillText('CHARCOS EN', 128, 115);
+    ctx.font = '900 24px monospace, sans-serif';
+    ctx.fillStyle = '#e67e22';
+    ctx.fillText('MEGAMALLS', 128, 145);
+
+    // Icono excavadora amarilla simplificada
+    ctx.fillStyle = '#f39c12';
+    ctx.fillRect(80, 175, 96, 45);
+    ctx.fillStyle = '#34495e';
+    ctx.fillRect(95, 155, 45, 30);
+    ctx.fillStyle = '#2c3e50';
+    ctx.fillRect(70, 215, 116, 20);
+
+    ctx.fillStyle = '#ecf0f1';
+    ctx.font = 'bold 15px monospace, sans-serif';
+    ctx.fillText('¡PROGRESO 100% GARANTIZADO!', 128, 275);
+
+    ctx.fillStyle = '#e74c3c';
+    ctx.fillRect(15, 305, 226, 50);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 13px monospace, sans-serif';
+    ctx.fillText('PROHIBIDO CROAR', 128, 328);
+    ctx.fillText('SIN PERMISO MUNICIPAL', 128, 346);
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.magFilter = THREE.NearestFilter;
+    tex.minFilter = THREE.LinearFilter;
+    return tex;
+  },
+
+  // Cartel satírico de aguas termales / contaminación
+  createToxicWaterSign() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 384;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+
+    // Fondo verde tóxico con borde de peligro
+    ctx.fillStyle = '#0652dd';
+    ctx.fillRect(0, 0, 384, 256);
+
+    ctx.lineWidth = 10;
+    ctx.strokeStyle = '#ff9f1a';
+    ctx.strokeRect(5, 5, 374, 246);
+
+    ctx.fillStyle = '#ff3838';
+    ctx.fillRect(12, 12, 360, 42);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 20px monospace, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('⚠ RESERVA HIDROLÓGICA MUNICIPAL ⚠', 192, 40);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 22px monospace, sans-serif';
+    ctx.fillText('“BALNEARIO DEL BIENESTAR”', 192, 85);
+    ctx.fillStyle = '#fffa65';
+    ctx.font = 'bold 20px monospace, sans-serif';
+    ctx.fillText('PROPIEDAD DE PATO LEMUS & TALACORP', 192, 115);
+
+    ctx.fillStyle = '#17c0eb';
+    ctx.fillRect(16, 135, 352, 45);
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 15px monospace, sans-serif';
+    ctx.fillText('AGUA 100% ENRIQUECIDA', 192, 155);
+    ctx.font = '12px monospace, sans-serif';
+    ctx.fillText('(40% Uranio, 60% Vertido Industrial Aprobado)', 192, 172);
+
+    ctx.fillStyle = '#ff3838';
+    ctx.font = 'bold 14px monospace, sans-serif';
+    ctx.fillText('“Los peces de 3 ojos son muestra de abundancia”', 192, 215);
+    ctx.fillStyle = '#c7ecee';
+    ctx.font = '11px monospace, sans-serif';
+    ctx.fillText('- Ministerio de Turismo & Desecho -', 192, 235);
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.magFilter = THREE.NearestFilter;
+    tex.minFilter = THREE.LinearFilter;
+    return tex;
   }
 };

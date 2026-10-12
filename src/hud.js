@@ -7,6 +7,7 @@ export class HUD {
     this.coinsElem = document.getElementById('hud-coins');
     this.altitudeElem = document.getElementById('hud-altitude');
     this.interactPrompt = document.getElementById('interact-prompt');
+    this.interactBtn = document.getElementById('btn-interact-npc');
     this.bossBarContainer = document.getElementById('boss-health-container');
     this.bossBarFill = document.getElementById('boss-health-fill');
     this.dialogueBox = document.getElementById('n64-dialogue-box');
@@ -19,6 +20,24 @@ export class HUD {
     this.textIndex = 0;
     this.typewriterTimer = null;
     this.onDialogueClose = null;
+    this.activeNearNpc = null;
+
+    if (this.interactBtn) {
+      this.interactBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.interactBtn.blur();
+        if (this.activeNearNpc && this.dialogueBox.style.display !== 'flex') {
+          this.activeNearNpc.interact(this);
+        }
+      });
+    }
+
+    if (this.dialogueBox) {
+      this.dialogueBox.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.closeDialogue();
+      });
+    }
   }
 
   update(player, level, boss) {
@@ -27,15 +46,17 @@ export class HUD {
     if (this.bugsElem) this.bugsElem.textContent = `${player.bugsEaten % 20} / 20`;
     if (this.coinsElem) this.coinsElem.textContent = `x ${player.coins.toString().padStart(2, '0')}`;
 
-    // Prompt de interacción con NPCs cercanos
-    if (this.interactPrompt && level && level.npcs) {
-      const nearNpc = level.npcs.find(n => n.isNear);
-      if (nearNpc && this.dialogueBox.style.display !== 'flex') {
-        this.interactPrompt.style.display = 'block';
-        this.interactPrompt.textContent = `[E / Clic] Hablar con ${nearNpc.name}`;
-      } else {
-        this.interactPrompt.style.display = 'none';
+    // Prompt y botón de interacción con NPCs cercanos
+    const nearNpc = level && level.npcs ? level.npcs.find(n => n.isNear) : null;
+    this.activeNearNpc = nearNpc;
+
+    if (nearNpc && this.dialogueBox.style.display !== 'flex') {
+      if (this.interactBtn) this.interactBtn.style.display = 'flex';
+      if (this.interactPrompt) {
+        this.interactPrompt.textContent = `Hablar con ${nearNpc.name} [E / Clic]`;
       }
+    } else {
+      if (this.interactBtn) this.interactBtn.style.display = 'none';
     }
 
     // 2. Altitud y sector del ascenso
@@ -62,6 +83,7 @@ export class HUD {
   showDialogue(speaker, text, onClose = null) {
     this.dialogueSpeaker.textContent = speaker;
     this.dialogueBox.style.display = 'flex';
+    if (this.interactBtn) this.interactBtn.style.display = 'none';
     this.currentText = text;
     this.textIndex = 0;
     this.dialogueText.textContent = '';

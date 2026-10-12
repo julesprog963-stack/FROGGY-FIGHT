@@ -27,7 +27,7 @@ export class Level {
     this.checkpoints = [];
     this.npcs = [];
     this.coins = [];
-    this.swampRadius = 48.0;
+    this.swampRadius = 72.0;
 
     this.trunkMesh = null;
     this.arenaRadius = 14;
@@ -42,13 +42,15 @@ export class Level {
     this.populateBugs();
     this.buildPerimeterBarriers();
     this.buildPatoLemusBillboard();
+    this.buildPatoLemusCampaignPodium();
+    this.buildToxicDrainageEasterEgg();
     this.spawnNPCs();
     this.spawnCoins();
   }
 
   buildWorld() {
-    // 1. Suelo del bosque talado
-    const groundGeo = new THREE.PlaneGeometry(160, 160, 16, 16);
+    // 1. Suelo del bosque talado (expandido a 240x240m para máxima amplitud)
+    const groundGeo = new THREE.PlaneGeometry(240, 240, 24, 24);
     const groundMat = new THREE.MeshLambertMaterial({
       color: 0x1b331b,
       flatShading: true
@@ -59,29 +61,29 @@ export class Level {
     this.scene.add(ground);
 
     const groundBox = new THREE.Box3(
-      new THREE.Vector3(-80, -2, -80),
-      new THREE.Vector3(80, -1, 80)
+      new THREE.Vector3(-120, -2, -120),
+      new THREE.Vector3(120, -1, 120)
     );
     this.platforms.push({ mesh: ground, getBounds: () => groundBox });
 
-    // Agua pantanosa reflectante
-    const waterGeo = new THREE.PlaneGeometry(150, 150);
+    // Agua pantanosa reflectante (expandida a 230x230m)
+    const waterGeo = new THREE.PlaneGeometry(230, 230);
     const waterMat = new THREE.MeshBasicMaterial({
       color: 0x0a2216,
       transparent: true,
-      opacity: 0.72
+      opacity: 0.75
     });
     const water = new THREE.Mesh(waterGeo, waterMat);
     water.rotation.x = -Math.PI / 2;
     water.position.y = -0.6;
     this.scene.add(water);
 
-    // Tocones cortados en la distancia
+    // Tocones cortados en la distancia con holgura y separación
     const stumpMat = new THREE.MeshLambertMaterial({ color: 0x3d2714, flatShading: true });
-    for (let i = 0; i < 22; i++) {
-      const angle = (i / 22) * Math.PI * 2 + Math.random() * 0.2;
-      const dist = 30 + Math.random() * 28;
-      const h = 2 + Math.random() * 7;
+    for (let i = 0; i < 34; i++) {
+      const angle = (i / 34) * Math.PI * 2 + (i % 3) * 0.15;
+      const dist = 28 + (i % 5) * 8.5;
+      const h = 2 + (i % 4) * 1.8;
       const stump = new THREE.Mesh(new THREE.CylinderGeometry(2, 2.8, h, 7), stumpMat);
       stump.position.set(Math.cos(angle) * dist, h * 0.5 - 1, Math.sin(angle) * dist);
       this.scene.add(stump);
@@ -334,8 +336,10 @@ export class Level {
     });
     const barrelMat = new THREE.MeshLambertMaterial({ color: 0x2f3640, flatShading: true });
     const sludgeMat = new THREE.MeshBasicMaterial({ color: 0x2ecc71, transparent: true, opacity: 0.85 });
+    const poster1Tex = Textures.createCampaignPoster1();
+    const poster2Tex = Textures.createCampaignPoster2();
 
-    const numPosts = 24;
+    const numPosts = 36;
     for (let i = 0; i < numPosts; i++) {
       const angle = (i / numPosts) * Math.PI * 2;
       const nextAngle = ((i + 1) / numPosts) * Math.PI * 2;
@@ -346,34 +350,44 @@ export class Level {
       const npx = Math.sin(nextAngle) * r;
       const npz = Math.cos(nextAngle) * r;
 
-      // Poste vertical de soporte
-      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.26, 3.4, 6), postMat);
-      post.position.set(px, 0.7, pz);
+      // Poste vertical de soporte de alta seguridad
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.28, 3.8, 6), postMat);
+      post.position.set(px, 0.9, pz);
       this.scene.add(post);
 
-      // Travesaño con franjas diagonales amarillas y negras de advertencia
+      // Travesaño con franjas diagonales de advertencia
       const midX = (px + npx) * 0.5;
       const midZ = (pz + npz) * 0.5;
       const segLen = Math.hypot(npx - px, npz - pz);
-      const beam = new THREE.Mesh(new THREE.BoxGeometry(segLen, 0.55, 0.18), beamMat);
-      beam.position.set(midX, 1.4, midZ);
+      const beam = new THREE.Mesh(new THREE.BoxGeometry(segLen, 0.6, 0.2), beamMat);
+      beam.position.set(midX, 1.6, midZ);
       beam.rotation.y = Math.atan2(npx - px, npz - pz) - Math.PI / 2;
       this.scene.add(beam);
 
-      // Barriles tóxicos de TALACORP intercalados
+      // Afiches electorales de campaña pegados en las vallas perimetrales
+      if (i % 4 === 0) {
+        const posterMesh = new THREE.Mesh(
+          new THREE.BoxGeometry(1.4, 2.1, 0.08),
+          new THREE.MeshLambertMaterial({ map: (i % 8 === 0) ? poster1Tex : poster2Tex, flatShading: true })
+        );
+        posterMesh.position.set(midX * 0.98, 1.8, midZ * 0.98);
+        posterMesh.rotation.y = Math.atan2(npx - px, npz - pz) - Math.PI / 2;
+        this.scene.add(posterMesh);
+      }
+
+      // Barriles tóxicos y charcos radiactivos intercalados
       if (i % 2 === 0) {
-        const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.65, 1.5, 8), barrelMat);
-        barrel.position.set(px * 0.95, 0.2, pz * 0.95);
+        const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.68, 0.68, 1.6, 8), barrelMat);
+        barrel.position.set(px * 0.96, 0.2, pz * 0.96);
         if (i % 4 === 0) {
           barrel.rotation.z = Math.PI / 3;
           barrel.position.y = -0.15;
         }
         this.scene.add(barrel);
 
-        // Charco de líquido tóxico verde radiactivo
-        const sludge = new THREE.Mesh(new THREE.CircleGeometry(1.4 + Math.random() * 0.6, 8), sludgeMat);
+        const sludge = new THREE.Mesh(new THREE.CircleGeometry(1.6 + (i % 3) * 0.4, 8), sludgeMat);
         sludge.rotation.x = -Math.PI / 2;
-        sludge.position.set(px * 0.93, -0.55, pz * 0.93);
+        sludge.position.set(px * 0.94, -0.55, pz * 0.94);
         this.scene.add(sludge);
       }
     }
@@ -381,8 +395,8 @@ export class Level {
 
   buildPatoLemusBillboard() {
     const billboardGroup = new THREE.Group();
-    billboardGroup.position.set(-16, 0, 24);
-    billboardGroup.rotation.y = 0.35; // Orientado hacia el inicio del nivel
+    billboardGroup.position.set(-26, 0, 36);
+    billboardGroup.rotation.y = 0.35; // Orientado hacia el sendero
 
     const woodPillarMat = new THREE.MeshLambertMaterial({ color: 0x5d4037, flatShading: true });
     const metalMat = new THREE.MeshLambertMaterial({ color: 0x7f8c8d, flatShading: true });
@@ -394,7 +408,7 @@ export class Level {
       billboardGroup.add(pillar);
     });
 
-    // Vigas cruzadas traseras de andamio
+    // Vigas traseras de andamio
     const strut = new THREE.Mesh(new THREE.BoxGeometry(13, 0.3, 0.2), metalMat);
     strut.position.set(0, 3.5, -0.3);
     billboardGroup.add(strut);
@@ -447,78 +461,280 @@ export class Level {
     this.scene.add(billboardGroup);
   }
 
+  buildPatoLemusCampaignPodium() {
+    // Podio electoral de campaña del Presidente Pato Lemus con tarima, megáfonos y figura de cartón
+    const podiumGroup = new THREE.Group();
+    podiumGroup.position.set(-18, 0, 48);
+    podiumGroup.rotation.y = -0.25;
+
+    const woodPlankMat = new THREE.MeshLambertMaterial({ color: 0xa0522d, flatShading: true });
+    const redClothMat = new THREE.MeshLambertMaterial({ color: 0xd63031, flatShading: true });
+    const goldMat = new THREE.MeshLambertMaterial({ color: 0xf1c40f, flatShading: true });
+    const darkSuitMat = new THREE.MeshLambertMaterial({ color: 0x2d3436, flatShading: true });
+
+    // Tarima de madera con dos escalones
+    const stage = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.5, 4.2), woodPlankMat);
+    stage.position.y = 0.25;
+    podiumGroup.add(stage);
+
+    const step = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.25, 1.2), woodPlankMat);
+    step.position.set(0, 0.12, 2.3);
+    podiumGroup.add(step);
+
+    // Alfombra roja central
+    const carpet = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.05, 4.2), redClothMat);
+    carpet.position.set(0, 0.52, 0);
+    podiumGroup.add(carpet);
+
+    // Atril con escudo presidencial y micrófono
+    const lectern = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.6, 0.8), woodPlankMat);
+    lectern.position.set(0, 1.3, 0.8);
+    podiumGroup.add(lectern);
+
+    const lecternPlaque = new THREE.Mesh(
+      new THREE.BoxGeometry(1.0, 0.6, 0.05),
+      new THREE.MeshLambertMaterial({ map: Textures.createCampaignPoster1(), flatShading: true })
+    );
+    lecternPlaque.position.set(0, 1.45, 1.23);
+    podiumGroup.add(lecternPlaque);
+
+    // Micrófonos dorados de conferencia
+    [-0.22, 0.22].forEach(x => {
+      const micPole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.45, 4), goldMat);
+      micPole.position.set(x, 2.2, 1.0);
+      micPole.rotation.x = 0.3;
+      podiumGroup.add(micPole);
+
+      const micHead = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 6), darkSuitMat);
+      micHead.position.set(x, 2.4, 1.12);
+      podiumGroup.add(micHead);
+    });
+
+    // Torres de sonido / Megáfonos de campaña a los lados
+    [-2.8, 2.8].forEach(x => {
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 4.5, 6), darkSuitMat);
+      pole.position.set(x, 2.25, 0);
+      podiumGroup.add(pole);
+
+      const horn = new THREE.Mesh(new THREE.ConeGeometry(0.4, 0.8, 8), goldMat);
+      horn.position.set(x, 4.2, 0.2);
+      horn.rotation.x = Math.PI / 2;
+      horn.rotation.y = (x < 0) ? 0.3 : -0.3;
+      podiumGroup.add(horn);
+    });
+
+    // Figura recortada de cartón (Standee) a tamaño real de PATO LEMUS
+    const cutoutGroup = new THREE.Group();
+    cutoutGroup.position.set(0, 0.5, -0.4);
+
+    // Cuerpo con traje presidencial
+    const suitBody = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.4, 0.15), darkSuitMat);
+    suitBody.position.y = 1.3;
+    cutoutGroup.add(suitBody);
+
+    // Corbata roja
+    const tie = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.8, 0.08), redClothMat);
+    tie.position.set(0, 1.3, 0.12);
+    cutoutGroup.add(tie);
+
+    // Cabeza de pato amarilla
+    const duckHead = new THREE.Mesh(new THREE.SphereGeometry(0.48, 8, 8), new THREE.MeshLambertMaterial({ color: 0xf1c40f }));
+    duckHead.position.set(0, 2.2, 0);
+    cutoutGroup.add(duckHead);
+
+    // Pico anaranjado grande y arrogante
+    const beak = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.65, 6), new THREE.MeshLambertMaterial({ color: 0xe67e22 }));
+    beak.position.set(0, 2.1, 0.45);
+    beak.rotation.x = Math.PI / 2;
+    cutoutGroup.add(beak);
+
+    // Sombrero de copa negro
+    const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.08, 8), darkSuitMat);
+    hatBrim.position.set(0, 2.6, 0);
+    cutoutGroup.add(hatBrim);
+
+    const hatTop = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.6, 8), darkSuitMat);
+    hatTop.position.set(0, 2.9, 0);
+    cutoutGroup.add(hatTop);
+
+    podiumGroup.add(cutoutGroup);
+
+    // Gran cartel de fondo "PATO LEMUS 2026: EL CANDIDATO QUE CUAC-MPLE"
+    const backdrop = new THREE.Mesh(
+      new THREE.BoxGeometry(4.8, 3.2, 0.12),
+      new THREE.MeshLambertMaterial({ map: Textures.createCampaignPoster2(), flatShading: true })
+    );
+    backdrop.position.set(0, 2.2, -1.8);
+    podiumGroup.add(backdrop);
+
+    this.scene.add(podiumGroup);
+  }
+
+  buildToxicDrainageEasterEgg() {
+    // Zona de contaminación industrial y vertedero de TALACORP
+    const toxicGroup = new THREE.Group();
+    toxicGroup.position.set(-44, 0, -28);
+
+    const concreteMat = new THREE.MeshLambertMaterial({ color: 0x4a4a4a, flatShading: true });
+    const metalMat = new THREE.MeshLambertMaterial({ map: Textures.createHazardMetal(), flatShading: true });
+    const toxicSludgeMat = new THREE.MeshBasicMaterial({ color: 0x00ff88, transparent: true, opacity: 0.9 });
+    const barrelMat = new THREE.MeshLambertMaterial({ color: 0x1e272e, flatShading: true });
+
+    // Muro de contención de hormigón
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(16, 5.5, 2.2), concreteMat);
+    wall.position.set(0, 2.2, 0);
+    toxicGroup.add(wall);
+
+    // Tubería gigante de vertido de TALACORP saliendo del muro
+    const pipe = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 5.0, 10), metalMat);
+    pipe.rotation.x = Math.PI / 2;
+    pipe.position.set(0, 1.8, 2.2);
+    toxicGroup.add(pipe);
+
+    // Chorro de baba verde radiactiva cayendo de la tubería
+    const flowGeo = new THREE.CylinderGeometry(1.1, 1.35, 2.8, 8);
+    const flow = new THREE.Mesh(flowGeo, toxicSludgeMat);
+    flow.position.set(0, 0.2, 4.4);
+    flow.rotation.x = 0.25;
+    toxicGroup.add(flow);
+
+    // Gran estanque de lodo tóxico fluorescente
+    const acidPool = new THREE.Mesh(new THREE.CircleGeometry(7.8, 16), toxicSludgeMat);
+    acidPool.rotation.x = -Math.PI / 2;
+    acidPool.position.set(0, -0.52, 6.0);
+    toxicGroup.add(acidPool);
+
+    // 4 Barriles tóxicos flotantes volcados en el ácido
+    [
+      { x: -3.2, z: 5.5, rotZ: 0.4 },
+      { x: 3.5, z: 6.8, rotZ: -0.6 },
+      { x: 1.2, z: 8.5, rotZ: 1.1 },
+      { x: -2.0, z: 8.0, rotZ: -0.3 }
+    ].forEach(b => {
+      const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.65, 1.5, 8), barrelMat);
+      barrel.position.set(b.x, -0.3, b.z);
+      barrel.rotation.z = b.rotZ;
+      toxicGroup.add(barrel);
+    });
+
+    // Cartel satírico oficial: "BALNEARIO DEL BIENESTAR PATO LEMUS - AGUA 100% MINERALIZADA"
+    const signPolesMat = new THREE.MeshLambertMaterial({ color: 0x57606f, flatShading: true });
+    [-2.2, 2.2].forEach(x => {
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 3.2, 6), signPolesMat);
+      pole.position.set(x, 1.3, 10.5);
+      toxicGroup.add(pole);
+    });
+
+    const signBoard = new THREE.Mesh(
+      new THREE.BoxGeometry(4.6, 2.8, 0.15),
+      new THREE.MeshLambertMaterial({ map: Textures.createToxicWaterSign(), flatShading: true })
+    );
+    signBoard.position.set(0, 2.4, 10.5);
+    toxicGroup.add(signBoard);
+
+    this.scene.add(toxicGroup);
+  }
+
   spawnNPCs() {
-    // 1. Chippy la ardilla vendada llorando sobre un tocón
+    // 1. Chippy la ardilla vendada llorando sobre su tocón talado
     this.npcs.push(new NPC(this.scene, {
       type: 'squirrel',
       name: 'CHIPPY LA ARDILLA',
-      dialogue: '¡Snif... Maldita corporación TALACORP! El Presidente Pato Lemus prometió en campaña que solo podaría unas ramas secas, ¡y ahora van a poner un estacionamiento de 8 pisos sobre mi casa!',
-      position: new THREE.Vector3(7.5, 0.5, 18.0),
+      dialogue: '¡Snif... Maldita corporación TALACORP! El Presidente Pato Lemus prometió en campaña que solo podaría unas ramas secas, ¡y ahora van a poner un estacionamiento de 8 pisos sobre mi casa! ¡Usa el botón de hablar en pantalla si tienes un plan para detenerlos!',
+      position: new THREE.Vector3(14.0, 0.5, 24.0),
       rotationY: -0.8
     }));
 
-    // 2. Don Caparazón la tortuga en huelga con pancarta
+    // 2. Don Caparazón la tortuga de 120 años en huelga frente al podio de Pato Lemus
     this.npcs.push(new NPC(this.scene, {
       type: 'turtle',
       name: 'DON CAPARAZÓN',
-      dialogue: 'Llevo 120 años en este pantano, jovencito. El Presidente Pato Lemus vendió los derechos del bosque a TALACORP por dos costales de maíz transgénico. ¡Sube a ese tronco y desmantela a su robot antes de que echen cemento!',
-      position: new THREE.Vector3(-13.5, -0.5, 20.0),
+      dialogue: 'Llevo 120 años en este pantano, jovencito. El Presidente Pato Lemus montó su podio de campaña ahí enfrente para presumir su MegaMall... ¡Vendió los derechos del bosque y del agua a TALACORP por dos sacos de maíz transgénico! ¡Sube a ese tronco y dale su merecido antes de que vacíen cemento!',
+      position: new THREE.Vector3(-36.0, -0.5, 44.0),
       rotationY: 0.45
     }));
 
-    // 3. Pepe la zarigüeya lastimada con muleta
+    // 3. Pepe la zarigüeya lastimada con muleta en el campamento de desplazados
     this.npcs.push(new NPC(this.scene, {
       type: 'opossum',
       name: 'PEPE LA ZARIGÜEYA',
-      dialogue: '¡Esos insectos mecánicos nos electrocutaron la madriguera! Los obreros de TALACORP tiraron monedas de oro por todo el pantano... Si juntas 10 monedas, te darán energía para ganar una vida extra. ¡Venga a nuestro hogar, Froggy!',
-      position: new THREE.Vector3(-20.0, -0.5, -14.0),
+      dialogue: '¡Esos buldóceres nos pasaron por encima! Nos dejaron sin madriguera pero los obreros de TALACORP tiraron monedas de oro por todos lados... Si juntas 10 monedas, ¡recibes una vida extra! ¡Venga a nuestro hogar, Froggy!',
+      position: new THREE.Vector3(38.0, -0.5, -28.0),
       rotationY: 1.2
+    }));
+
+    // 4. Blinky el Pez Mutante de Tres Ojos en la laguna de agua contaminada (Easter Egg)
+    this.npcs.push(new NPC(this.scene, {
+      type: 'mutant_fish',
+      name: 'BLINKY EL PEZ MUTANTE',
+      dialogue: '¡Cof, cof! ¡Glub... glub! El Presidente Pato Lemus dice que las aguas residuales de TALACORP son "minerales energéticos para el cutis". ¡Ahora tengo tres ojos y brillo en la oscuridad! Si subes a la cima del árbol, ¡ciérrales la llave del desagüe!',
+      position: new THREE.Vector3(-42.0, -0.6, -24.0),
+      rotationY: 0.8
     }));
   }
 
   spawnCoins() {
     const coinPositions = [
-      // Alrededor del inicio y camino
+      // Alrededor del inicio y camino hacia el árbol
       new THREE.Vector3(0, 0.2, 13.5),
-      new THREE.Vector3(2.5, 0.2, 14.5),
-      new THREE.Vector3(-2.5, 0.2, 14.5),
-      new THREE.Vector3(0, 0.2, 16.5),
+      new THREE.Vector3(2.5, 0.2, 15.0),
+      new THREE.Vector3(-2.5, 0.2, 15.0),
+      new THREE.Vector3(0, 0.2, 18.0),
+      new THREE.Vector3(3.0, 0.2, 20.0),
+      new THREE.Vector3(-3.0, 0.2, 20.0),
 
-      // Cerca de Chippy la ardilla
-      new THREE.Vector3(6.0, 0.2, 17.0),
-      new THREE.Vector3(7.5, 0.2, 16.2),
-      new THREE.Vector3(9.0, 0.2, 17.5),
-      new THREE.Vector3(8.0, 0.2, 19.5),
+      // Zona de Chippy la ardilla (Sur / Claro de tocones)
+      new THREE.Vector3(12.0, 0.2, 22.0),
+      new THREE.Vector3(14.0, 0.2, 21.5),
+      new THREE.Vector3(16.0, 0.2, 23.5),
+      new THREE.Vector3(15.0, 0.2, 26.0),
+      new THREE.Vector3(18.0, 0.2, 24.0),
 
-      // Cerca del Cartel de Pato Lemus y Don Caparazón
-      new THREE.Vector3(-11.5, 0.2, 18.5),
-      new THREE.Vector3(-13.5, 0.2, 18.0),
-      new THREE.Vector3(-15.5, 0.2, 19.0),
-      new THREE.Vector3(-17.5, 0.2, 20.5),
-      new THREE.Vector3(-14.0, 0.2, 22.0),
-      new THREE.Vector3(-16.0, 0.2, 23.5),
+      // Complejo Político Pato Lemus (Suroeste: Valla, Podio y Don Caparazón)
+      new THREE.Vector3(-22.0, 0.2, 34.0),
+      new THREE.Vector3(-24.0, 0.2, 36.0),
+      new THREE.Vector3(-26.0, 0.2, 38.0),
+      new THREE.Vector3(-28.0, 0.2, 40.0),
+      new THREE.Vector3(-18.0, 0.6, 46.5), // Sobre el podio de campaña
+      new THREE.Vector3(-18.0, 0.6, 49.5),
+      new THREE.Vector3(-20.0, 0.2, 51.0),
+      new THREE.Vector3(-34.0, 0.2, 42.0), // Cerca de Don Caparazón
+      new THREE.Vector3(-36.0, 0.2, 46.0),
+      new THREE.Vector3(-38.0, 0.2, 43.0),
 
-      // Cerca de Pepe la zarigüeya y barriles tóxicos
-      new THREE.Vector3(-17.0, 0.2, -12.5),
-      new THREE.Vector3(-19.0, 0.2, -13.0),
-      new THREE.Vector3(-21.0, 0.2, -15.0),
-      new THREE.Vector3(-18.5, 0.2, -16.5),
+      // Zona de Contaminación Hídrica & Blinky el Pez Mutante (Noroeste)
+      new THREE.Vector3(-40.0, 0.2, -20.0),
+      new THREE.Vector3(-42.0, 0.2, -22.0),
+      new THREE.Vector3(-44.0, 0.2, -25.0),
+      new THREE.Vector3(-41.0, 0.2, -27.0),
+      new THREE.Vector3(-45.0, 0.2, -22.0),
+      new THREE.Vector3(-38.0, 0.2, -30.0),
+      new THREE.Vector3(-44.0, 0.2, -32.0),
 
-      // Alrededor de otros tocones en el pantano
-      new THREE.Vector3(18.0, 0.2, 5.0),
-      new THREE.Vector3(20.0, 0.2, 7.5),
-      new THREE.Vector3(22.0, 0.2, 4.0),
-      new THREE.Vector3(-10.0, 0.2, -25.0),
-      new THREE.Vector3(-12.5, 0.2, -27.0),
-      new THREE.Vector3(15.0, 0.2, -20.0),
-      new THREE.Vector3(17.5, 0.2, -22.5),
-      new THREE.Vector3(-28.0, 0.2, 5.0),
-      new THREE.Vector3(-30.0, 0.2, 7.5),
+      // Zona de Refugiados y Pepe la Zarigüeya (Noreste)
+      new THREE.Vector3(34.0, 0.2, -25.0),
+      new THREE.Vector3(36.0, 0.2, -27.0),
+      new THREE.Vector3(38.0, 0.2, -30.0),
+      new THREE.Vector3(40.0, 0.2, -26.0),
+      new THREE.Vector3(35.0, 0.2, -32.0),
 
-      // En plataformas de madera de la base del árbol
+      // Perímetro exterior y claros adicionales
+      new THREE.Vector3(0, 0.2, 55.0),
+      new THREE.Vector3(25.0, 0.2, 45.0),
+      new THREE.Vector3(-48.0, 0.2, 10.0),
+      new THREE.Vector3(50.0, 0.2, 5.0),
+      new THREE.Vector3(20.0, 0.2, -45.0),
+      new THREE.Vector3(-25.0, 0.2, -50.0),
+
+      // En plataformas del tronco del árbol (ascenso)
       new THREE.Vector3(-4.5, 4.5, 10.5), // Escalón 1
       new THREE.Vector3(-8.2, 7.2, 8.8),   // Escalón 2
-      new THREE.Vector3(3.5, 10.5, 9.8)   // Repisa siguiente
+      new THREE.Vector3(3.5, 10.5, 9.8),  // Repisa siguiente
+      new THREE.Vector3(8.5, 13.5, 6.0),
+      new THREE.Vector3(9.5, 17.0, -1.0),
+      new THREE.Vector3(5.5, 20.5, -8.0),
+      new THREE.Vector3(-2.0, 24.5, -9.5),
+      new THREE.Vector3(-7.5, 28.0, -5.5)
     ];
 
     coinPositions.forEach(pos => {
@@ -540,8 +756,8 @@ export class Level {
     this.coins.forEach(c => c.update(dt, frog));
     this.npcs.forEach(n => n.update(dt, frog, hud));
 
-    // Interacción con NPCs al pulsar E o Tongue
-    if (input && (input.keys.tonguePressed || input.keys.jumpPressed)) {
+    // Interacción con NPCs al pulsar tecla E (Tongue)
+    if (input && input.keys.tonguePressed) {
       const nearNpc = this.npcs.find(n => n.isNear);
       if (nearNpc && hud && hud.dialogueBox.style.display !== 'flex') {
         nearNpc.interact(hud);
