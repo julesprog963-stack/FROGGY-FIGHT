@@ -1,7 +1,7 @@
 const { chromium } = require('playwright');
 
 (async () => {
-  console.log('🎬 Iniciando prueba de Cinemática de Introducción 3D y Transición a Gameplay...');
+  console.log('🎬 Iniciando prueba de Cinemática de Introducción 3D (Idéntica a la referencia de Pato Lemus)...');
   const browser = await chromium.launch({
     headless: true,
     args: ['--use-gl=angle', '--use-angle=swiftshader', '--no-sandbox']
@@ -20,7 +20,7 @@ const { chromium } = require('playwright');
   // 2. Iniciar Aventura y Activar Cinemática
   console.log('🎮 Presionando [¡INICIAR AVENTURA!]...');
   await page.click('#btn-start');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(400);
 
   let state = await page.evaluate(() => window.__game.state);
   console.log('Estado actual:', state);
@@ -28,72 +28,39 @@ const { chromium } = require('playwright');
     throw new Error(`Estado debería ser "cinematic", obtenido: ${state}`);
   }
 
-  // 3. FASE 1: Frogbert durmiendo
-  console.log('💤 FASE 1: Verificando Frogbert durmiendo con Zzz y mochila...');
-  const phase1 = await page.evaluate(() => {
+  // 3. FASE 1: Confrontación Épica (Exacta a la imagen de referencia)
+  console.log('🦆 FASE 1: Verificando Confrontación de Pato Lemus y Frogbert en primer plano...');
+  const confrontationData = await page.evaluate(() => {
     const c = window.__game.cinematic;
     const p = window.__game.player;
-    return {
-      phase: c.phase,
-      time: c.time,
-      frogPos: { x: p.position.x, y: p.position.y, z: p.position.z },
-      hasBackpack: !!p.backpack,
-      zzzCount: c.zzzSprites.length
-    };
-  });
-  console.log('Datos Fase 1:', JSON.stringify(phase1));
-  await page.screenshot({ path: 'screenshot-cinematic-sleeping.png' });
-  console.log('📸 Captura: screenshot-cinematic-sleeping.png');
-
-  // 4. FASE 2 y 3: Llegada de Pato Lemus y Diálogo
-  console.log('🦆 FASE 2 & 3: Avanzando a la llegada de Pato Lemus...');
-  await page.evaluate(() => {
-    window.__game.cinematic.time = 4.0; // Pasa a fase arrival
-    window.__game.cinematic.update(0.01);
-  });
-  await page.waitForTimeout(400);
-
-  const phase2 = await page.evaluate(() => {
-    const c = window.__game.cinematic;
-    return {
-      phase: c.phase,
-      hasPatoLemus: !!c.patoLemus,
-      talabotsCount: c.talabots.length,
-      pointingArm: !!c.pointingArm
-    };
-  });
-  console.log('Datos Fase 2:', JSON.stringify(phase2));
-
-  // Avanzar al diálogo de Pato Lemus
-  await page.evaluate(() => {
-    window.__game.cinematic.time = 7.5; // Pasa a fase dialogue
-    window.__game.cinematic.update(0.01);
-  });
-  await page.waitForTimeout(400);
-
-  const dialogueInfo = await page.evaluate(() => {
-    const c = window.__game.cinematic;
     const box = document.getElementById('n64-dialogue-box');
     const speaker = document.getElementById('dialogue-speaker').innerText;
     const content = document.getElementById('dialogue-content').innerText;
     return {
       phase: c.phase,
+      hasPatoLemus: !!c.patoLemus,
+      hasPointingArm: !!c.pointingArm,
+      frogPos: { x: p.position.x, y: p.position.y, z: p.position.z },
+      hasBackpack: !!p.backpack,
       boxVisible: box.style.display,
       speaker,
-      content: content.substring(0, 60) + '...'
+      content: content.substring(0, 50) + '...'
     };
   });
-  console.log('Datos Diálogo Pato Lemus:', JSON.stringify(dialogueInfo));
-  if (!dialogueInfo.speaker.includes('PATO LEMUS')) {
-    throw new Error(`Hablante esperado PATO LEMUS, recibido: ${dialogueInfo.speaker}`);
+  console.log('Datos Confrontación:', JSON.stringify(confrontationData));
+  if (!confrontationData.speaker.includes('PATO LEMUS')) {
+    throw new Error(`Hablante esperado PATO LEMUS, recibido: ${confrontationData.speaker}`);
   }
-  await page.screenshot({ path: 'screenshot-cinematic-pato-lemus.png' });
-  console.log('📸 Captura: screenshot-cinematic-pato-lemus.png');
 
-  // 5. FASE 4: La Patada y ¡POW!
-  console.log('💥 FASE 4: Ejecutando patada de Pato Lemus...');
+  // Esperar a que el texto del diálogo se escriba completamente para la captura
+  await page.waitForTimeout(2800);
+  await page.screenshot({ path: 'screenshot-cinematic-reference-match.png' });
+  console.log('📸 Captura Maestra guardada: screenshot-cinematic-reference-match.png');
+
+  // 4. FASE 2: La Patada y ¡POW!
+  console.log('💥 FASE 2: Avanzando a la patada de Pato Lemus...');
   await page.evaluate(() => {
-    window.__game.cinematic.time = 11.2; // Fase kick con powStar
+    window.__game.cinematic.time = 6.6; // Fase kick con powStar
     window.__game.cinematic.update(0.01);
   });
   await page.waitForTimeout(300);
@@ -110,13 +77,13 @@ const { chromium } = require('playwright');
   await page.screenshot({ path: 'screenshot-cinematic-kick.png' });
   console.log('📸 Captura: screenshot-cinematic-kick.png');
 
-  // 6. FASE 6 & 7: Vuelo, Aterrizaje Forzoso y Frogbert Enojado
-  console.log('😡 FASE 6 & 7: Frogbert aterriza en la base del árbol enojado...');
+  // 5. FASE 4 & 5: Vuelo, Aterrizaje y Frogbert Enojado
+  console.log('😡 FASE 4 & 5: Frogbert aterriza en la base del árbol enojado...');
   await page.evaluate(() => {
-    window.__game.cinematic.time = 16.5; // Fase angry
+    window.__game.cinematic.time = 13.0; // Fase angry
     window.__game.cinematic.update(0.01);
   });
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(500);
 
   const angryInfo = await page.evaluate(() => {
     const c = window.__game.cinematic;
@@ -137,12 +104,11 @@ const { chromium } = require('playwright');
   await page.screenshot({ path: 'screenshot-cinematic-angry-frogbert.png' });
   console.log('📸 Captura: screenshot-cinematic-angry-frogbert.png');
 
-  // 7. Cerrar diálogo y entrar a Gameplay
+  // 6. Cerrar diálogo y entrar a Gameplay Activo
   console.log('🕹️ Cerrando diálogo y validando transición a juego activo...');
   await page.keyboard.press('Space');
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(300);
 
-  // Terminar cinemática
   await page.evaluate(() => {
     window.__game.cinematic.finish();
   });
@@ -150,23 +116,20 @@ const { chromium } = require('playwright');
 
   const gameState = await page.evaluate(() => {
     const p = window.__game.player;
-    const cam = window.__game.tpCamera;
     return {
       state: window.__game.state,
       pos: { x: p.position.x, y: p.position.y, z: p.position.z },
-      cinematicNull: window.__game.cinematic === null,
-      cameraPos: { x: window.__game.camera.position.x, y: window.__game.camera.position.y, z: window.__game.camera.position.z }
+      cinematicNull: window.__game.cinematic === null
     };
   });
   console.log('Estado de juego activo:', JSON.stringify(gameState));
   if (gameState.state !== 'playing') {
     throw new Error(`Estado esperado playing, obtenido: ${gameState.state}`);
   }
-
   await page.screenshot({ path: 'screenshot-gameplay-ready.png' });
   console.log('📸 Captura: screenshot-gameplay-ready.png');
 
-  // 8. Probar Botón de Salto de Cinemática (Skip)
+  // 7. Probar Botón de Salto de Cinemática (Skip)
   console.log('⏭️ Probando botón de Saltarse Intro (#btn-skip-cinematic)...');
   await page.reload();
   await page.waitForTimeout(600);
@@ -193,6 +156,6 @@ const { chromium } = require('playwright');
     throw new Error('El botón de saltar cinemática no cambió el estado a playing');
   }
 
-  console.log('✅ Todas las pruebas de cinemática completadas con éxito.');
+  console.log('✅ Todas las pruebas completadas con éxito.');
   await browser.close();
 })();

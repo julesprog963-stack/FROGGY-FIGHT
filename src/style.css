@@ -210,45 +210,48 @@ body, html {
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Cuadro de Diálogos estilo Conker's Bad Fur Day */
+/* Cuadro de Diálogos estilo Conker's Bad Fur Day (fiel a la referencia) */
 #n64-dialogue-box {
   display: none;
   position: absolute;
-  bottom: 30px;
+  bottom: 24px;
   left: 50%;
-  transform: translateX(-50%);
-  width: 680px;
-  max-width: 92vw;
-  background: #fffbeb;
-  border: 5px solid #1e293b;
-  box-shadow: 6px 6px 0px #000;
-  border-radius: 12px;
-  padding: 20px 26px;
+  transform: translateX(-55%);
+  width: 700px;
+  max-width: calc(100vw - 180px);
+  background: #ffffff;
+  border: 4px solid #1c2d44;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+  border-radius: 8px;
+  padding: 14px 22px;
   z-index: 20;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
   font-family: 'Rubik Mono One', 'Press Start 2P', sans-serif;
 }
 
 #dialogue-speaker {
-  font-size: 14px;
-  color: #c2410c;
-  text-shadow: 1px 1px 0px #000;
+  font-size: 15px;
+  color: #d35400;
   text-transform: uppercase;
+  font-weight: 900;
+  letter-spacing: 2px;
 }
 
 #dialogue-content {
-  font-size: 14px;
-  color: #0f172a;
-  line-height: 1.7;
+  font-size: 13px;
+  color: #18243b;
+  line-height: 1.6;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 .dialogue-hint {
-  font-size: 12px;
-  color: #334155;
+  font-size: 15px;
+  color: #2980b9;
   align-self: flex-end;
-  margin-top: 6px;
-  animation: blink 1s infinite;
+  margin-top: 2px;
+  animation: blink 0.8s infinite;
 }
 
 @keyframes blink {
@@ -292,19 +295,24 @@ body, html {
 
 .btn-skip-intro {
   position: absolute;
-  top: 24px;
+  top: 76px;
   right: 24px;
   background: rgba(15, 23, 42, 0.88);
   border: 3px solid #f39c12;
   box-shadow: 3px 3px 0px #000;
   border-radius: 8px;
-  padding: 10px 18px;
+  padding: 8px 16px;
   color: #facc15;
   font-family: inherit;
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
   z-index: 60;
   transition: transform 0.1s ease, background 0.15s ease;
+}
+
+body.in-cinematic #controls-hint,
+body.in-dialogue #controls-hint {
+  display: none !important;
 }
 
 .btn-skip-intro:hover {
@@ -384,23 +392,26 @@ body, html {
 
 #utility-buttons {
   position: absolute;
-  bottom: 18px;
-  right: 18px;
-  z-index: 10;
+  bottom: 24px;
+  right: 20px;
+  z-index: 25;
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .icon-btn {
-  background: #0f172a;
+  background: #0d1b2a;
   color: #facc15;
-  border: 3px solid #d97706;
-  box-shadow: 3px 3px 0px #000;
-  padding: 10px 16px;
-  font-size: 13px;
+  border: 2px solid #d97706;
+  box-shadow: 2px 2px 0px #000;
+  padding: 8px 12px;
+  font-size: 11px;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 4px;
   font-family: inherit;
+  font-weight: 700;
+  letter-spacing: 0.5px;
   transition: transform 0.1s;
 }
 

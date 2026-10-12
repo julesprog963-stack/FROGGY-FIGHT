@@ -493,14 +493,14 @@ export const Textures = {
     canvas.height = 64;
     const ctx = canvas.getContext('2d');
 
-    // Azul marino oscuro elegante
-    ctx.fillStyle = '#1c2d44';
+    // Azul marino oscuro elegante exacto a la referencia (#1a2842)
+    ctx.fillStyle = '#18243b';
     ctx.fillRect(0, 0, 64, 64);
 
-    // Rayas verticales finas en azul grisáceo tenue
-    ctx.fillStyle = '#4a6585';
-    for (let x = 4; x < 64; x += 12) {
-      ctx.fillRect(x, 0, 2, 64);
+    // Rayas verticales finas en azul grisáceo suave (#4d688a)
+    ctx.fillStyle = '#486588';
+    for (let x = 3; x < 64; x += 10) {
+      ctx.fillRect(x, 0, 1.5, 64);
     }
 
     const tex = new THREE.CanvasTexture(canvas);
@@ -511,23 +511,91 @@ export const Textures = {
     return tex;
   },
 
-  // Corbata oscura con lunares rojos sutiles
+  // Estandarte verde colgante con silueta de rana de TALACORP (idéntico a la referencia)
+  createFrogBanner() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+
+    // Fondo verde brillante
+    ctx.fillStyle = '#218c47';
+    ctx.fillRect(0, 0, 128, 256);
+
+    // Borde verde oscuro
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = '#145a2d';
+    ctx.strokeRect(4, 4, 120, 248);
+
+    // Silueta de rana negra estilizada en el centro
+    ctx.fillStyle = '#0f1f14';
+
+    // Cabeza de rana
+    ctx.beginPath();
+    ctx.ellipse(64, 110, 42, 34, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Ojos de rana saltones
+    ctx.beginPath();
+    ctx.arc(42, 82, 18, 0, Math.PI * 2);
+    ctx.arc(86, 82, 18, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Interior de los ojos (verde de fondo)
+    ctx.fillStyle = '#218c47';
+    ctx.beginPath();
+    ctx.arc(42, 82, 10, 0, Math.PI * 2);
+    ctx.arc(86, 82, 10, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Pupilas
+    ctx.fillStyle = '#0f1f14';
+    ctx.beginPath();
+    ctx.arc(42, 82, 5, 0, Math.PI * 2);
+    ctx.arc(86, 82, 5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Sonrisa pícara de la rana
+    ctx.strokeStyle = '#218c47';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(64, 112, 26, 0.2, Math.PI - 0.2);
+    ctx.stroke();
+
+    // Recorte triangular de cola de golondrina en la base
+    ctx.fillStyle = '#111c14'; // color del fondo / transparencia
+    ctx.beginPath();
+    ctx.moveTo(16, 256);
+    ctx.lineTo(64, 218);
+    ctx.lineTo(112, 256);
+    ctx.closePath();
+    ctx.fill();
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.magFilter = THREE.NearestFilter;
+    tex.minFilter = THREE.LinearFilter;
+    return tex;
+  },
+
+  // Corbata oscura con lunares rojos sutiles (Pato Lemus en la referencia)
   createPolkaDotTie() {
     const canvas = document.createElement('canvas');
     canvas.width = 32;
     canvas.height = 32;
     const ctx = canvas.getContext('2d');
 
-    ctx.fillStyle = '#1e272e';
+    // Fondo gris azulado oscuro (#1a222d)
+    ctx.fillStyle = '#161d27';
     ctx.fillRect(0, 0, 32, 32);
 
-    ctx.fillStyle = '#eb4d4b';
+    // Lunares rojos rubí (#c0392b)
+    ctx.fillStyle = '#c0392b';
     ctx.beginPath();
-    ctx.arc(8, 8, 2.5, 0, Math.PI * 2);
-    ctx.arc(24, 8, 2.5, 0, Math.PI * 2);
-    ctx.arc(16, 20, 2.5, 0, Math.PI * 2);
-    ctx.arc(8, 28, 2.5, 0, Math.PI * 2);
-    ctx.arc(24, 28, 2.5, 0, Math.PI * 2);
+    ctx.arc(8, 8, 2.2, 0, Math.PI * 2);
+    ctx.arc(24, 8, 2.2, 0, Math.PI * 2);
+    ctx.arc(16, 20, 2.2, 0, Math.PI * 2);
+    ctx.arc(8, 28, 2.2, 0, Math.PI * 2);
+    ctx.arc(24, 28, 2.2, 0, Math.PI * 2);
     ctx.fill();
 
     const tex = new THREE.CanvasTexture(canvas);

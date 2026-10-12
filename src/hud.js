@@ -81,6 +81,7 @@ export class HUD {
   }
 
   showDialogue(speaker, text, onClose = null) {
+    document.body.classList.add('in-dialogue');
     this.dialogueSpeaker.textContent = speaker;
     this.dialogueBox.style.display = 'flex';
     if (this.interactBtn) this.interactBtn.style.display = 'none';
@@ -105,6 +106,7 @@ export class HUD {
   }
 
   closeDialogue() {
+    document.body.classList.remove('in-dialogue');
     this.dialogueBox.style.display = 'none';
     if (this.typewriterTimer) clearInterval(this.typewriterTimer);
     if (this.onDialogueClose) {
