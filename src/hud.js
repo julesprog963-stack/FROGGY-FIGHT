@@ -4,7 +4,9 @@ export class HUD {
   constructor() {
     this.livesElem = document.getElementById('hud-lives');
     this.bugsElem = document.getElementById('hud-bugs');
+    this.coinsElem = document.getElementById('hud-coins');
     this.altitudeElem = document.getElementById('hud-altitude');
+    this.interactPrompt = document.getElementById('interact-prompt');
     this.bossBarContainer = document.getElementById('boss-health-container');
     this.bossBarFill = document.getElementById('boss-health-fill');
     this.dialogueBox = document.getElementById('n64-dialogue-box');
@@ -20,9 +22,21 @@ export class HUD {
   }
 
   update(player, level, boss) {
-    // 1. Contador de vidas y bichos
+    // 1. Contador de vidas, bichos y monedas
     if (this.livesElem) this.livesElem.textContent = `x ${player.lives}`;
     if (this.bugsElem) this.bugsElem.textContent = `${player.bugsEaten % 20} / 20`;
+    if (this.coinsElem) this.coinsElem.textContent = `x ${player.coins.toString().padStart(2, '0')}`;
+
+    // Prompt de interacción con NPCs cercanos
+    if (this.interactPrompt && level && level.npcs) {
+      const nearNpc = level.npcs.find(n => n.isNear);
+      if (nearNpc && this.dialogueBox.style.display !== 'flex') {
+        this.interactPrompt.style.display = 'block';
+        this.interactPrompt.textContent = `[E / Clic] Hablar con ${nearNpc.name}`;
+      } else {
+        this.interactPrompt.style.display = 'none';
+      }
+    }
 
     // 2. Altitud y sector del ascenso
     if (this.altitudeElem) {

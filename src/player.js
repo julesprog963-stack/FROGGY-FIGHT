@@ -33,9 +33,10 @@ export class Player {
     this.swingRopeLength = 0;
     this.swingVelocity = new THREE.Vector3();
 
-    // Sistema de vidas y bichos
+    // Sistema de vidas, bichos y monedas
     this.lives = 3;
     this.bugsEaten = 0;
+    this.coins = 0;
     this.totalBugsForLife = 20;
     this.lastCheckpoint = new THREE.Vector3(0, 1.6, 11);
     this.invulnerableTimer = 0;
@@ -596,6 +597,14 @@ export class Player {
 
     if (this.position.y < -8) {
       this.respawnAtCheckpoint();
+    }
+  }
+
+  collectCoin() {
+    this.coins++;
+    if (this.coins % 10 === 0) {
+      this.lives++;
+      audio.play1Up();
     }
   }
 

@@ -181,6 +181,36 @@ class AudioManager {
     });
   }
 
+  // SFX: Moneda dorada recogida (Ding brillante retro estilo Mario / Banjo)
+  playCoin() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    
+    // Tono 1: B5 (987.77 Hz)
+    const osc1 = this.ctx.createOscillator();
+    const gain1 = this.ctx.createGain();
+    osc1.type = 'triangle';
+    osc1.frequency.setValueAtTime(987.77, now);
+    gain1.gain.setValueAtTime(0.35, now);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+    osc1.connect(gain1);
+    gain1.connect(this.sfxGain);
+    osc1.start(now);
+    osc1.stop(now + 0.13);
+
+    // Tono 2: E6 (1318.51 Hz)
+    const osc2 = this.ctx.createOscillator();
+    const gain2 = this.ctx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(1318.51, now + 0.07);
+    gain2.gain.setValueAtTime(0.4, now + 0.07);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+    osc2.connect(gain2);
+    gain2.connect(this.sfxGain);
+    osc2.start(now + 0.07);
+    osc2.stop(now + 0.4);
+  }
+
   // SFX: Hoja crujiendo / aviso de peligro
   playLeafCreak() {
     if (!this.ctx || this.isMuted) return;

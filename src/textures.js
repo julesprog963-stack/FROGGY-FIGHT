@@ -202,5 +202,102 @@ export const Textures = {
     
     const tex = new THREE.CanvasTexture(canvas);
     return tex;
+  },
+
+  // Cartel gigante publicitario estilo municipal / político de Pato Lemus
+  createBillboardTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+
+    // Fondo tablero de construcción
+    ctx.fillStyle = '#f5f6fa';
+    ctx.fillRect(0, 0, 512, 256);
+
+    // Marco exterior de obra
+    ctx.lineWidth = 12;
+    ctx.strokeStyle = '#e67e22';
+    ctx.strokeRect(6, 6, 500, 244);
+
+    // Encabezado corporativo TALACORP
+    ctx.fillStyle = '#d35400';
+    ctx.fillRect(12, 12, 488, 44);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 22px monospace, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('★ TALACORP INVERSIONES & DESARROLLO ★', 256, 42);
+
+    // Anuncio principal
+    ctx.fillStyle = '#c0392b';
+    ctx.font = 'bold 32px monospace, sans-serif';
+    ctx.fillText('PRÓXIMAMENTE AQUÍ:', 256, 92);
+
+    // Nombre del Centro Comercial y Presidente Pato Lemus
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = '900 36px monospace, sans-serif';
+    ctx.fillText('MEGAMALL & PLAZA', 256, 136);
+
+    ctx.fillStyle = '#27ae60';
+    ctx.font = '900 34px monospace, sans-serif';
+    ctx.fillText('“PRESIDENTE PATO LEMUS”', 256, 178);
+
+    // Lema de campaña
+    ctx.fillStyle = '#e74c3c';
+    ctx.fillRect(12, 196, 488, 46);
+    ctx.fillStyle = '#f1c40f';
+    ctx.font = 'bold 20px monospace, sans-serif';
+    ctx.fillText('“¡EL PROGRESO NO SE DETIENE!” (100% PAVIMENTADO)', 256, 226);
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.magFilter = THREE.NearestFilter;
+    tex.minFilter = THREE.LinearFilter;
+    return tex;
+  },
+
+  // Franjas diagonales de peligro (Hazard Stripes) amarillo y negro
+  createHazardStripes() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#f1c40f';
+    ctx.fillRect(0, 0, 64, 64);
+
+    ctx.fillStyle = '#1e272e';
+    ctx.beginPath();
+    ctx.moveTo(0, 16);
+    ctx.lineTo(16, 0);
+    ctx.lineTo(32, 0);
+    ctx.lineTo(0, 32);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(0, 48);
+    ctx.lineTo(48, 0);
+    ctx.lineTo(64, 0);
+    ctx.lineTo(0, 64);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(16, 64);
+    ctx.lineTo(64, 16);
+    ctx.lineTo(64, 32);
+    ctx.lineTo(32, 64);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(48, 64);
+    ctx.lineTo(64, 48);
+    ctx.lineTo(64, 64);
+    ctx.fill();
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.magFilter = THREE.NearestFilter;
+    tex.minFilter = THREE.NearestFilter;
+    return tex;
   }
 };

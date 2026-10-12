@@ -124,6 +124,7 @@ class Game {
   restartGame() {
     this.player.lives = 3;
     this.player.bugsEaten = 0;
+    this.player.coins = 0;
     this.player.position.set(0, 2, 8);
     this.player.velocity.set(0, 0, 0);
     this.player.lastCheckpoint.set(0, 2, 8);
@@ -155,7 +156,7 @@ class Game {
       // Actualizar entidades con cámara y partículas
       this.particles.update(dt);
       this.player.update(dt, this.input, this.level.platforms, this.level.anchors, this.level.bugs, this.boss, this.tpCamera);
-      this.level.update(dt, this.player);
+      this.level.update(dt, this.player, this.hud, this.input);
       this.tpCamera.update(dt);
 
       const height = this.player.position.y;
