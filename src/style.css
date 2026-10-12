@@ -82,6 +82,17 @@ body, html {
   filter: drop-shadow(2px 2px 0px #000);
 }
 
+.hud-pixel-icon {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(2px 2px 0px #000000);
+  flex-shrink: 0;
+}
+
 .rare-text {
   color: #facc15;
   text-shadow: 2px 2px 0px #b45309, 3px 3px 0px #000;
