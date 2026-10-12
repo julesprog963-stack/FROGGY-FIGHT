@@ -21,6 +21,7 @@ export class Player {
     this.jumpBuffer = 0;
     this.chargeTime = 0;
     this.isChargingJump = false;
+    this.hitstopTimer = 0;
     
     // Estado de la lengua (mecánica de balanceo y caza)
     this.tongueState = 'idle'; // 'idle' | 'shooting' | 'attached' | 'retracting'
@@ -198,6 +199,11 @@ export class Player {
   }
 
   update(dt, input, platforms, anchors, bugs, boss, camera = null) {
+    if (this.hitstopTimer > 0) {
+      this.hitstopTimer = Math.max(0, this.hitstopTimer - dt);
+      return;
+    }
+
     this.animTime += dt * 8;
     if (this.invulnerableTimer > 0) {
       this.invulnerableTimer -= dt;
@@ -254,20 +260,28 @@ export class Player {
     if (this.isGrounded) {
       this.coyoteTime = 0.14;
     } else {
-      this.coyoteTime -= dt;
+      this.coyoteTime = Math.max(0, this.coyoteTime - dt);
+    }
+
+    if (this.jumpBuffer > 0) {
+      this.jumpBuffer = Math.max(0, this.jumpBuffer - dt);
     }
 
     if (input.keys.jumpPressed) {
-      this.jumpBuffer = 0.12;
-      this.isChargingJump = true;
-      this.chargeTime = 0;
+      if (this.isGrounded || this.coyoteTime > 0) {
+        this.isChargingJump = true;
+        this.chargeTime = 0;
+      } else {
+        // En el aire: registrar en el buffer para ejecutar al aterrizar
+        this.jumpBuffer = 0.14;
+      }
     }
 
     if (this.isChargingJump) {
       this.chargeTime += dt;
-      // Compresión cómica de preparación
+      // Compresión cómica elástica
       const chargePct = Math.min(this.chargeTime / 0.35, 1.0);
-      this.squashStretch.set(1 + chargePct * 0.35, 0.85 - chargePct * 0.45, 1 + chargePct * 0.35);
+      this.squashStretch.set(1 + chargePct * 0.32, 0.80 - chargePct * 0.40, 1 + chargePct * 0.32);
 
       // Inflar mejillas
       this.cheeks.forEach(c => c.scale.setScalar(1 + chargePct * 1.4));
@@ -280,15 +294,15 @@ export class Player {
       const chargeRatio = Math.min(this.chargeTime / 0.35, 1.0);
 
       if (this.coyoteTime > 0 || this.isGrounded) {
-        const jumpVel = this.jumpForce * (0.8 + chargeRatio * 0.45);
+        const jumpVel = this.jumpForce * (0.85 + chargeRatio * 0.45);
         this.velocity.y = jumpVel;
         this.isGrounded = false;
         this.coyoteTime = 0;
         this.jumpBuffer = 0;
         audio.playJump(chargeRatio);
 
-        // Estiramiento cómico
-        this.squashStretch.set(0.75, 1.45, 0.75);
+        // Estiramiento cómico en despegue
+        this.squashStretch.set(0.78, 1.42, 0.78);
 
         // Nubes de polvo al despegar
         if (this.particles) {
@@ -326,6 +340,7 @@ export class Player {
             this.tongueTarget.alive = false;
             this.bugsEaten++;
             audio.playEatBug();
+            this.hitstopTimer = 0.05; // Hitstop de 50ms para impacto crujiente
 
             if (this.particles) {
               this.particles.spawnDustPuff(this.tongueAnchorPos, 5, 0x2ecc71);
@@ -340,6 +355,7 @@ export class Player {
         } else if (this.tongueTargetType === 'boss') {
           this.tongueState = 'retracting';
           if (boss) boss.takeHit();
+          this.hitstopTimer = 0.08; // Hitstop de 80ms en jefe
           if (this.particles) this.particles.spawnSparks(this.tongueAnchorPos, 14);
           if (camera) camera.addTrauma(0.5);
         } else {
@@ -547,14 +563,29 @@ export class Player {
       this.isGrounded = true;
 
       // Impacto de aterrizaje
-      if (!this.wasGrounded && previousVy < -4) {
-        audio.playLand();
-        this.squashStretch.set(1.25, 0.75, 1.25);
-        if (this.particles) {
-          this.particles.spawnDustPuff(this.position, 6);
+      if (!this.wasGrounded) {
+        if (previousVy < -4) {
+          audio.playLand();
+          this.squashStretch.set(1.28, 0.72, 1.28);
+          if (this.particles) {
+            this.particles.spawnDustPuff(this.position, 6);
+          }
+          if (camera && previousVy < -16) {
+            camera.addTrauma(0.35);
+          }
         }
-        if (camera && previousVy < -16) {
-          camera.addTrauma(0.35);
+
+        // Si el jugador pulsó salto en el aire justo antes de aterrizar (Jump Buffering)
+        if (this.jumpBuffer > 0) {
+          this.velocity.y = this.jumpForce * 0.95;
+          this.isGrounded = false;
+          this.jumpBuffer = 0;
+          this.coyoteTime = 0;
+          audio.playJump(0.5);
+          this.squashStretch.set(0.8, 1.35, 0.8);
+          if (this.particles) {
+            this.particles.spawnDustPuff(this.position, 6);
+          }
         }
       }
 
@@ -589,13 +620,16 @@ export class Player {
   }
 
   updateAnimation(dt, input) {
-    // Restaurar squash & stretch suavemente
-    this.squashStretch.lerp(new THREE.Vector3(1, 1, 1), dt * 8);
-    this.body.scale.set(
-      1.1 * this.squashStretch.x,
-      0.85 * this.squashStretch.y,
-      1.0 * this.squashStretch.z
-    );
+    // Restaurar squash & stretch suavemente con curva de retorno
+    this.squashStretch.lerp(new THREE.Vector3(1, 1, 1), dt * 10);
+    if (this.modelContainer) {
+      this.modelContainer.scale.set(
+        this.squashStretch.x,
+        this.squashStretch.y,
+        this.squashStretch.z
+      );
+    }
+    this.body.scale.set(1.1, 0.85, 1.0);
 
     // Parpadeo y reacción de ojos
     const blink = Math.sin(this.animTime * 0.5) > 0.96;
