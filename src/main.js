@@ -333,11 +333,12 @@ class Game {
         }
       }
 
-      if (height > 36) {
+      const isBossActive = this.dialogueTriggeredBoss || height >= 40.2;
+      if (isBossActive && height >= 32) {
         audio.setTrack('boss');
         this.boss.update(dt, this.player, this.tpCamera, this.input);
 
-        if (!this.dialogueTriggeredBoss) {
+        if (!this.dialogueTriggeredBoss && height >= 40.2) {
           this.dialogueTriggeredBoss = true;
           this.summitCutscene = new SummitCutscene(
             this.scene,

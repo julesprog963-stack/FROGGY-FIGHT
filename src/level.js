@@ -436,17 +436,17 @@ export class Level {
 
   populateBugs() {
     const flyPositions = [
-      new THREE.Vector3(-2, 4, 11),
-      new THREE.Vector3(-6, 7.5, 9.5),
-      new THREE.Vector3(-10, 11, 7),
-      new THREE.Vector3(-12, 14, 0),
-      new THREE.Vector3(-6, 18, -10),
-      new THREE.Vector3(0, 21, -11),
-      new THREE.Vector3(6, 25, -8),
-      new THREE.Vector3(12, 28, -2),
-      new THREE.Vector3(12, 31, 5),
-      new THREE.Vector3(8, 35, 9),
-      new THREE.Vector3(2, 39, 10),
+      new THREE.Vector3(-2.5, 4, 12.0),
+      new THREE.Vector3(-7.2, 7.5, 11.0),
+      new THREE.Vector3(-10.5, 11, 7.5),
+      new THREE.Vector3(-12.5, 14, 0.5),
+      new THREE.Vector3(-7.5, 18, -11.5),
+      new THREE.Vector3(0.5, 21, -12.0),
+      new THREE.Vector3(7.5, 25, -9.8),
+      new THREE.Vector3(12.5, 28, -2.5),
+      new THREE.Vector3(12.5, 31, 5.5),
+      new THREE.Vector3(8.5, 35, 9.5),
+      new THREE.Vector3(2.5, 39, 10.8),
       new THREE.Vector3(-4, 42, 4),
       new THREE.Vector3(4, 42, -4)
     ];

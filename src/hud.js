@@ -73,15 +73,16 @@ export class HUD {
     if (this.altitudeElem) {
       const height = Math.max(0, Math.round(player.position.y));
       let zoneName = "Base del Tronco";
-      if (height > 35) zoneName = "¡CIMA - ZONA DEL EXTERMINADOR!";
-      else if (height > 25) zoneName = "Sector Tuberías TALACORP";
-      else if (height > 12) zoneName = "Hojas y Lianas de la Selva";
+      if (height >= 40) zoneName = "¡CIMA - ZONA DEL EXTERMINADOR!";
+      else if (height > 32) zoneName = "Ascenso Final a la Cima";
+      else if (height > 22) zoneName = "Sector Tuberías TALACORP";
+      else if (height > 10) zoneName = "Hojas y Lianas de la Selva";
 
       this.altitudeElem.textContent = `ALT: ${height}m - ${zoneName}`;
     }
 
     // 3. Barra del Jefe si está activo (transform scaleX para 60fps sin reflows)
-    if (boss && player.position.y > 36 && boss.state !== 'defeated') {
+    if (boss && boss.state !== 'dormant' && boss.state !== 'defeated' && (player.position.y >= 40.0 || (boss.hp < boss.maxHp && player.position.y >= 35))) {
       this.bossBarContainer.style.display = 'block';
       const ratio = Math.max(0, boss.hp / boss.maxHp);
       this.bossBarFill.style.transform = `scaleX(${ratio})`;

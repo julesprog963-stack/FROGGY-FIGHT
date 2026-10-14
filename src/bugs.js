@@ -55,6 +55,8 @@ export class SwampFly {
     this.position.y = this.center.y + Math.sin(this.time * 2) * 0.4;
     this.position.z = this.center.z + Math.sin(this.time * 2) * rZ;
 
+    this.handleTrunkCollision();
+
     this.mesh.position.copy(this.position);
     this.mesh.rotation.y = Math.cos(this.time) * 1.5;
 
@@ -62,6 +64,21 @@ export class SwampFly {
     const wingFlap = Math.sin(this.time * 25) * 0.6;
     if (this.wings[0]) this.wings[0].rotation.z = wingFlap;
     if (this.wings[1]) this.wings[1].rotation.z = -wingFlap;
+  }
+
+  handleTrunkCollision() {
+    if (this.position.y < 40.8) {
+      const t = Math.min(Math.max(this.position.y / 40.0, 0), 1.0);
+      const trunkRadius = 10.5 - t * 2.0;
+      const minDistance = trunkRadius + 0.50; // Margen de seguridad para que la mosca nunca penetre la corteza
+      const distXZ = Math.hypot(this.position.x, this.position.z);
+      if (distXZ < minDistance && distXZ > 0.001) {
+        const nx = this.position.x / distXZ;
+        const nz = this.position.z / distXZ;
+        this.position.x = nx * minDistance;
+        this.position.z = nz * minDistance;
+      }
+    }
   }
 }
 

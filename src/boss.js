@@ -227,7 +227,7 @@ export class BossTalabotTitan {
     this.maxHp = 3;
     this.hp = 3;
     this.phase = 1; // 1 | 2 | 3
-    this.state = 'idle'; // 'dormant' | 'idle' | 'walk' | 'stomp' | 'charge' | 'dizzy' | 'grabbed' | 'thrown' | 'falling' | 'ascending' | 'damaged' | 'defeated'
+    this.state = 'dormant'; // 'dormant' | 'idle' | 'walk' | 'stomp' | 'charge' | 'dizzy' | 'grabbed' | 'thrown' | 'falling' | 'ascending' | 'damaged' | 'defeated'
     this.timer = 0;
     this.subTimer = 0;
     this.velocity = new THREE.Vector3();
