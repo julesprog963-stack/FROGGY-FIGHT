@@ -676,8 +676,12 @@ export class BossTalabotTitan {
     this.state = 'grabbed';
     this.isGrabbed = true;
     this.subTimer = 0;
-    this.spinAngle = frog.facingAngle || 0;
+    this.spinAngle = frog ? (frog.facingAngle || 0) : 0;
     this.spinSpeed = 4.0; // Velocidad de giro inicial
+
+    if (frog && frog.onBossGrabbed) {
+      frog.onBossGrabbed(this);
+    }
 
     audio.playTongueShoot();
 
@@ -707,19 +711,32 @@ export class BossTalabotTitan {
       audio.playSpinWhoosh(0.8 + (this.spinSpeed / 14) * 0.8);
     }
 
-    // Posición orbitando a Frogbert a 3.5 metros
+    // Posición orbitando a Frogbert a 3.6 metros
     const orbitDist = 3.6;
-    const bossX = frog.position.x + Math.sin(this.spinAngle) * orbitDist;
-    const bossZ = frog.position.z + Math.cos(this.spinAngle) * orbitDist;
+    const frogPos = frog ? frog.position : this.arenaCenter;
+    const bossX = frogPos.x + Math.sin(this.spinAngle) * orbitDist;
+    const bossZ = frogPos.z + Math.cos(this.spinAngle) * orbitDist;
 
     this.mesh.position.set(bossX, this.arenaCenter.y + 0.8, bossZ);
-    this.mesh.rotation.y = this.spinAngle + Math.PI / 2;
+    // Orientación: la manija trasera (z=-2.1) apunta hacia Frogbert y el frente hacia afuera,
+    // con un arrastre angular centrífugo de inercia
+    const dragAngle = 0.22 * (this.spinSpeed / 14.0);
+    this.mesh.rotation.y = this.spinAngle + dragAngle;
     this.mesh.rotation.z = Math.sin(this.spinAngle * 2) * 0.2; // Inclinación centrífuga
+
+    // Actualizar coordenadas globales de la manija de la cola inmediatamente
+    this.mesh.localToWorld(this.tailHandlePos.set(0, 1.3, -2.1));
+    this.weakSpotPos.copy(this.tailHandlePos);
+
+    // Chispas y fricción centrífuga en las orugas
+    if (this.particles && Math.random() < 0.4) {
+      this.particles.spawnSparks(this.tailHandlePos, 2);
+    }
 
     // Actualizar flecha de trayectoria en el suelo
     if (this.trajectoryArrow) {
       const throwDirAngle = this.spinAngle + Math.PI / 2;
-      this.trajectoryArrow.position.set(frog.position.x, this.arenaCenter.y + 0.1, frog.position.z);
+      this.trajectoryArrow.position.set(frogPos.x, this.arenaCenter.y + 0.1, frogPos.z);
       this.trajectoryArrow.rotation.y = throwDirAngle;
     }
 
@@ -734,6 +751,10 @@ export class BossTalabotTitan {
     this.state = 'thrown';
     this.isGrabbed = false;
     this.subTimer = 0;
+
+    if (frog && frog.onBossReleased) {
+      frog.onBossReleased(this, this.throwVelocity);
+    }
 
     if (this.trajectoryArrow) {
       this.trajectoryArrow.visible = false;
@@ -754,6 +775,7 @@ export class BossTalabotTitan {
     if (camera) camera.addTrauma(0.4);
     if (this.particles) {
       this.particles.spawnShockwave(this.mesh.position, 0x2ecc71);
+      this.particles.spawnSparks(this.mesh.position, 15);
     }
   }
 

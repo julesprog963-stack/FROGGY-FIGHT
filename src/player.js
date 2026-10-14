@@ -24,7 +24,7 @@ export class Player {
     this.hitstopTimer = 0;
     
     // Estado de la lengua (mecánica de balanceo y caza)
-    this.tongueState = 'idle'; // 'idle' | 'shooting' | 'attached' | 'retracting'
+    this.tongueState = 'idle'; // 'idle' | 'shooting' | 'attached' | 'retracting' | 'grab_boss'
     this.tongueTarget = null;
     this.tongueTargetType = null; // 'anchor' | 'bug' | 'boss'
     this.tongueAnchorPos = new THREE.Vector3();
@@ -32,6 +32,8 @@ export class Player {
     this.maxTongueDist = 17;
     this.swingRopeLength = 0;
     this.swingVelocity = new THREE.Vector3();
+    this.isSwingingBoss = false;
+    this.currentBoss = null;
 
     // Sistema de vidas, bichos y monedas
     this.lives = 3;
@@ -240,7 +242,12 @@ export class Player {
       this.mesh.visible = true;
     }
 
-    if (this.tongueState === 'attached') {
+    if (this.isSwingingBoss || (boss && boss.state === 'grabbed')) {
+      if (!this.isSwingingBoss && boss) {
+        this.onBossGrabbed(boss);
+      }
+      this.handleBossSwing(dt, boss, input);
+    } else if (this.tongueState === 'attached') {
       this.handleTongueSwing(dt, input);
     } else {
       this.handleMovement(dt, input);
@@ -250,7 +257,7 @@ export class Player {
     this.handleTongueActions(dt, input, anchors, bugs, boss, camera);
     this.handleCollisions(dt, platforms, camera);
     this.mesh.position.copy(this.position);
-    this.updateAnimation(dt, input);
+    this.updateAnimation(dt, input, boss);
     this.updateShadow(platforms);
   }
 
@@ -381,13 +388,18 @@ export class Player {
             }
           }
         } else if (this.tongueTargetType === 'boss') {
-          this.tongueState = 'retracting';
           if (boss) {
             if (boss.startGrab) {
               boss.startGrab(this);
+              this.onBossGrabbed(boss);
             } else if (boss.takeHit) {
               boss.takeHit();
+              this.tongueState = 'retracting';
+            } else {
+              this.tongueState = 'retracting';
             }
+          } else {
+            this.tongueState = 'retracting';
           }
           this.hitstopTimer = 0.08;
           if (this.particles) this.particles.spawnSparks(this.tongueAnchorPos, 14);
@@ -535,6 +547,79 @@ export class Player {
     this.tongueMesh.lookAt(curEnd);
   }
 
+  onBossGrabbed(boss) {
+    this.isSwingingBoss = true;
+    this.currentBoss = boss;
+    this.tongueState = 'grab_boss';
+    this.velocity.set(0, 0, 0);
+    if (boss) {
+      this.facingAngle = boss.spinAngle;
+      this.mesh.rotation.y = boss.spinAngle;
+      if (boss.tailHandlePos) {
+        this.tongueAnchorPos.copy(boss.tailHandlePos);
+      }
+    }
+  }
+
+  onBossReleased(boss, throwVel) {
+    this.isSwingingBoss = false;
+    this.currentBoss = null;
+    this.tongueState = 'retracting';
+    this.tongueLength = 3.6;
+    if (boss && boss.tailHandlePos) {
+      this.tongueAnchorPos.copy(boss.tailHandlePos);
+    }
+    // Rebote cómico elástico de Frogbert al soltar la mole
+    this.squashStretch.set(0.75, 1.35, 0.75);
+  }
+
+  handleBossSwing(dt, boss, input) {
+    // 1. Inmovilizar desplazamiento mientras gira el robot gigante (anclado como en Mario 64)
+    this.velocity.set(0, 0, 0);
+
+    // 2. Girar y mirar directamente al robot en sincronía 360°
+    if (boss) {
+      this.currentBoss = boss;
+      this.facingAngle = boss.spinAngle;
+      this.mesh.rotation.y = boss.spinAngle;
+
+      // 3. Extender y mantener la lengua conectada desde la boca hasta la manija de la cola
+      const mouthPos = new THREE.Vector3();
+      if (this.mouth) {
+        this.mouth.getWorldPosition(mouthPos);
+      } else {
+        mouthPos.copy(this.position).add(new THREE.Vector3(0, 0.65, 0));
+      }
+
+      const targetPos = boss.tailHandlePos || boss.mesh.position;
+      this.tongueAnchorPos.copy(targetPos);
+      this.updateBossTongueMesh(mouthPos, targetPos);
+
+      // 4. Polvo centrífugo en las patas según la velocidad de giro
+      if (this.particles && Math.random() < Math.min(0.85, (boss.spinSpeed || 4) / 10)) {
+        const offset = (Math.random() - 0.5) * 0.9;
+        const footPos = this.position.clone().add(new THREE.Vector3(offset, 0.05, offset));
+        this.particles.spawnDustPuff(footPos, 2, 0xe1b12c);
+      }
+    }
+  }
+
+  updateBossTongueMesh(mouthWorld, targetWorld) {
+    if (!this.tongueMesh) return;
+    this.tongueMesh.visible = true;
+
+    const dist = mouthWorld.distanceTo(targetWorld);
+    if (dist < 0.1) {
+      this.tongueMesh.visible = false;
+      return;
+    }
+
+    this.tongueMesh.position.copy(mouthWorld);
+    // Grosor cómico destacado (1.4x) y longitud exacta hasta la cola
+    this.tongueMesh.scale.set(1.4, 1.4, dist);
+    this.tongueMesh.lookAt(targetWorld);
+  }
+
   handleCollisions(dt, platforms, camera) {
     // 1. Colisión sólida contra el tronco central del árbol (cilindro cónico)
     if (this.position.y < 40.2) {
@@ -661,7 +746,7 @@ export class Player {
     }
   }
 
-  updateAnimation(dt, input) {
+  updateAnimation(dt, input, boss = null) {
     // Restaurar squash & stretch suavemente con curva de retorno
     this.squashStretch.lerp(new THREE.Vector3(1, 1, 1), dt * 10);
     if (this.modelContainer) {
@@ -672,6 +757,77 @@ export class Player {
       );
     }
     this.body.scale.set(1.1, 0.85, 1.0);
+
+    const activeBoss = boss || this.currentBoss;
+    const isGrabbing = this.isSwingingBoss || (activeBoss && activeBoss.state === 'grabbed');
+
+    if (isGrabbing && activeBoss) {
+      const spinSpeed = activeBoss.spinSpeed || 4.0;
+      const speedRatio = Math.min(1.0, spinSpeed / 14.0);
+
+      // 1. Inclinación de contrapeso hacia atrás contra el arrastre inercial del robot
+      const targetLeanX = -0.25 - speedRatio * 0.18;
+      const targetTiltZ = -0.06 - speedRatio * 0.08;
+      this.modelContainer.rotation.x = THREE.MathUtils.lerp(this.modelContainer.rotation.x, targetLeanX, dt * 12);
+      this.modelContainer.rotation.z = THREE.MathUtils.lerp(this.modelContainer.rotation.z, targetTiltZ, dt * 12);
+      this.modelContainer.position.y = THREE.MathUtils.lerp(this.modelContainer.position.y, 0.50 - speedRatio * 0.08, dt * 12);
+
+      // 2. Boca cómica bien abierta sosteniendo la lengua tensa
+      if (this.mouth) {
+        this.mouth.scale.set(1.3, 1.85, 1.25);
+        this.mouth.position.set(0, 0.08, 0.65);
+      }
+
+      // 3. Mejillas infladas al máximo por la tensión de agarre
+      this.cheeks.forEach(c => {
+        const s = 1.25 + speedRatio * 0.35;
+        c.scale.set(s, s, s);
+      });
+
+      // 4. Ojos decididos, concentrados y fijos en el robot
+      this.eyelids.forEach((el, i) => {
+        el.rotation.x = -Math.PI / 3.0;
+        el.rotation.z = (i === 0) ? -0.35 : 0.35;
+      });
+      this.pupils.forEach(p => {
+        p.scale.set(1.25, 1.25, 1.25);
+        p.visible = true;
+      });
+
+      // 5. Patas flexionadas en postura atlética de giro y soporte
+      if (this.legs.length >= 2) {
+        this.legs[0].rotation.x = -0.35 + Math.sin(this.animTime * 4) * 0.12;
+        this.legs[1].rotation.x = 0.35 - Math.sin(this.animTime * 4) * 0.12;
+      }
+
+      // 6. Brazos extendidos hacia adelante sosteniendo la tensión
+      this.arms.forEach(arm => {
+        arm.rotation.x = -0.75;
+        arm.position.y = -0.08;
+      });
+
+      return;
+    }
+
+    // Regreso suave de rotaciones de contrapeso al estado normal
+    if (this.modelContainer) {
+      this.modelContainer.rotation.x = THREE.MathUtils.lerp(this.modelContainer.rotation.x, 0, dt * 8);
+      this.modelContainer.rotation.z = THREE.MathUtils.lerp(this.modelContainer.rotation.z, 0, dt * 8);
+      this.modelContainer.position.y = THREE.MathUtils.lerp(this.modelContainer.position.y, 0.60, dt * 8);
+    }
+    if (this.mouth) {
+      this.mouth.scale.lerp(new THREE.Vector3(1, 1, 1), dt * 10);
+      this.mouth.position.set(0, 0.05, 0.6);
+    }
+    this.cheeks.forEach(c => c.scale.lerp(new THREE.Vector3(1, 1, 1), dt * 10));
+    this.arms.forEach((a, i) => {
+      a.rotation.x = -0.2;
+      a.position.set(i === 0 ? -0.46 : 0.46, -0.2, 0.4);
+    });
+    this.eyelids.forEach(el => {
+      el.rotation.z = THREE.MathUtils.lerp(el.rotation.z, 0, dt * 10);
+      el.rotation.x = THREE.MathUtils.lerp(el.rotation.x, -Math.PI / 2.8, dt * 10);
+    });
 
     // Parpadeo y reacción de ojos
     const blink = Math.sin(this.animTime * 0.5) > 0.96;
