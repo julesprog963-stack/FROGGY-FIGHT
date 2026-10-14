@@ -166,6 +166,114 @@ const { chromium } = require('playwright');
   }
   await page.screenshot({ path: 'screenshot-test-bowser-mine-explosion.png' });
 
-  console.log('✅ ¡Todas las pruebas de cinemática en copa, patada, helicóptero y combate Mario vs Bowser pasaron al 100%!');
+  // 10. Probar Caída al Vacío y Ascenso con Propulsores de Recuperación
+  console.log('🚀 Probando caída libre al abismo y animación de ascenso con propulsores...');
+  const fallAndAscendData = await page.evaluate(async () => {
+    const b = window.__game.boss;
+    const p = window.__game.player;
+
+    // Lanzar al jefe intencionalmente hacia el vacío (lejos de las minas, por ejemplo a x=16, z=16)
+    b.state = 'thrown';
+    b.mesh.position.set(16, b.arenaCenter.y + 0.5, 16);
+    b.throwVelocity.set(4, -1, 4);
+
+    // Actualizar caída para que detecte que está fuera de la arena (radio 8.5)
+    b.updateThrown(0.1, p);
+    const fallingState = b.state; // Debe ser 'falling'
+
+    // Simular caída durante 1 segundo
+    for (let i = 0; i < 20; i++) {
+      b.updateFalling(0.05, p);
+    }
+    const deepY = b.mesh.position.y; // Altura en lo profundo del abismo
+
+    // Forzar transición a ascenso
+    b.updateFalling(0.5, p);
+    const ascendingState = b.state; // Debe ser 'ascending'
+
+    // Simular ascenso por propulsores
+    for (let i = 0; i < 40; i++) {
+      b.updateAscending(0.04, p);
+    }
+    const highY = b.mesh.position.y; // Altura máxima sobre la copa
+
+    // Continuar hasta el aterrizaje y recuperación en el centro
+    for (let i = 0; i < 60; i++) {
+      if (b.state === 'idle') break;
+      b.updateAscending(0.03, p);
+    }
+    const finalState = b.state;
+    const finalDistToCenter = Math.hypot(b.mesh.position.x - b.arenaCenter.x, b.mesh.position.z - b.arenaCenter.z);
+
+    return {
+      fallingState,
+      deepY,
+      ascendingState,
+      highY,
+      finalState,
+      finalDistToCenter,
+      finalY: b.mesh.position.y
+    };
+  });
+  console.log('Datos de Caída y Ascenso:', JSON.stringify(fallAndAscendData));
+  if (fallAndAscendData.fallingState !== 'falling' || fallAndAscendData.ascendingState !== 'ascending') {
+    throw new Error(`Estados de caída/ascenso incorrectos: ${JSON.stringify(fallAndAscendData)}`);
+  }
+  if (fallAndAscendData.deepY > 30) {
+    throw new Error(`El jefe no cayó al abismo: deepY=${fallAndAscendData.deepY}`);
+  }
+  if (fallAndAscendData.highY < 42) {
+    throw new Error(`El jefe no ascendió por encima de la plataforma: highY=${fallAndAscendData.highY}`);
+  }
+  if (fallAndAscendData.finalDistToCenter > 1.0 || fallAndAscendData.finalState !== 'idle') {
+    throw new Error(`El jefe no aterrizó recuperado en el centro: dist=${fallAndAscendData.finalDistToCenter}, state=${fallAndAscendData.finalState}`);
+  }
+  await page.screenshot({ path: 'screenshot-test-boss-rocket-recovery.png' });
+
+  // 11. Probar Ataque de Salto (Stomp) y Onda Expansiva Radial
+  console.log('🌊 Probando ataque de pisotón (stomp) y animación de onda expansiva...');
+  const stompData = await page.evaluate(() => {
+    const b = window.__game.boss;
+    const p = window.__game.player;
+
+    b.state = 'stomp';
+    b.subTimer = 0;
+    b.stompImpactTriggered = false;
+
+    // 1. Fase de salto en el aire
+    b.subTimer = 0.9;
+    b.updateStomp(0.01, p);
+    const jumpY = b.mesh.position.y;
+
+    // 2. Fase de impacto sísmico
+    b.subTimer = 1.15;
+    b.updateStomp(0.01, p);
+    const activeShockwaves = b.shockwaves.length;
+    const shockwave = b.shockwaves[0];
+
+    // 3. Simular expansión de la onda
+    if (shockwave) {
+      shockwave.update(0.4, p);
+    }
+    const waveRadius = shockwave ? shockwave.currentRadius : 0;
+    const waveOpacity = shockwave ? shockwave.mat.opacity : 0;
+
+    return {
+      jumpY,
+      activeShockwaves,
+      waveRadius,
+      waveOpacity
+    };
+  });
+  console.log('Datos de Salto y Onda Expansiva:', JSON.stringify(stompData));
+  if (stompData.jumpY < 42) {
+    throw new Error(`El salto del pisotón no alcanzó suficiente altura: jumpY=${stompData.jumpY}`);
+  }
+  if (stompData.activeShockwaves < 1 || stompData.waveRadius < 3.0) {
+    throw new Error(`La onda expansiva no se generó o no se expandió: ${JSON.stringify(stompData)}`);
+  }
+  await page.screenshot({ path: 'screenshot-test-boss-shockwave.png' });
+
+  console.log('✅ ¡Todas las pruebas de cinemática en copa, patada, helicóptero, caída/ascenso y onda expansiva pasaron al 100%!');
   await browser.close();
 })();

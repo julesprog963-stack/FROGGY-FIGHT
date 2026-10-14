@@ -103,6 +103,108 @@ export class SpikeMine {
   }
 }
 
+// ONDA EXPANSIVA CIRCULAR ANIMADA ESTILO SUPER MARIO 64 / BOWSER
+export class BossShockwave {
+  constructor(scene, center, maxRadius = 12.0, duration = 1.15, color = 0xff4757) {
+    this.scene = scene;
+    this.center = center.clone();
+    this.maxRadius = maxRadius;
+    this.duration = duration;
+    this.time = 0;
+    this.active = true;
+    this.currentRadius = 0.2;
+    this.hitPlayer = false;
+
+    this.mesh = new THREE.Group();
+    this.mesh.position.set(this.center.x, this.center.y + 0.08, this.center.z);
+
+    // 1. Anillo plano principal brillante a ras de suelo
+    const ringGeo = new THREE.RingGeometry(0.8, 1.0, 32);
+    ringGeo.rotateX(-Math.PI / 2);
+    this.mat = new THREE.MeshBasicMaterial({
+      color: color,
+      transparent: true,
+      opacity: 0.95,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    this.ringMesh = new THREE.Mesh(ringGeo, this.mat);
+    this.mesh.add(this.ringMesh);
+
+    // 2. Halo interno dorado/amarillo
+    const innerGeo = new THREE.RingGeometry(0.01, 0.8, 32);
+    innerGeo.rotateX(-Math.PI / 2);
+    this.innerMat = new THREE.MeshBasicMaterial({
+      color: 0xf1c40f,
+      transparent: true,
+      opacity: 0.35,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    this.innerMesh = new THREE.Mesh(innerGeo, this.innerMat);
+    this.mesh.add(this.innerMesh);
+
+    // 3. Cresta vertical 3D visible desde cualquier ángulo de cámara
+    const crestGeo = new THREE.CylinderGeometry(1.0, 1.0, 0.45, 32, 1, true);
+    this.crestMat = new THREE.MeshBasicMaterial({
+      color: color,
+      transparent: true,
+      opacity: 0.75,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    this.crestMesh = new THREE.Mesh(crestGeo, this.crestMat);
+    this.crestMesh.position.y = 0.22;
+    this.mesh.add(this.crestMesh);
+
+    this.scene.add(this.mesh);
+  }
+
+  update(dt, frog = null) {
+    if (!this.active) return;
+    this.time += dt;
+    const progress = Math.min(this.time / this.duration, 1.0);
+
+    // Expansión radial no-lineal suave (rápido al inicio, constante luego)
+    this.currentRadius = Math.max(0.2, Math.sqrt(progress) * this.maxRadius);
+
+    this.mesh.scale.set(this.currentRadius, 1.0, this.currentRadius);
+    this.mat.opacity = Math.max(0, (1 - progress * progress) * 0.95);
+    this.innerMat.opacity = Math.max(0, (1 - progress) * 0.35);
+    this.crestMat.opacity = Math.max(0, (1 - progress) * 0.75);
+
+    // Comprobación de impacto con Frogbert:
+    // Si la onda alcanza a Frogbert mientras está en el suelo, recibe daño.
+    // Si Frogbert salta por encima (no está grounded y su Y supera la onda), ¡la esquiva limpiamente!
+    if (frog && !this.hitPlayer && progress < 0.95) {
+      const playerDist = Math.hypot(frog.position.x - this.center.x, frog.position.z - this.center.z);
+      const ringThickness = 1.35;
+      if (Math.abs(playerDist - this.currentRadius) < ringThickness) {
+        const isGrounded = frog.isGrounded || (frog.position.y < this.center.y + 0.85);
+        if (isGrounded && frog.invulnerableTimer <= 0) {
+          this.hitPlayer = true;
+          frog.respawnAtCheckpoint();
+        }
+      }
+    }
+
+    if (progress >= 1.0) {
+      this.dispose();
+    }
+  }
+
+  dispose() {
+    this.active = false;
+    if (this.mesh && this.mesh.parent) {
+      this.scene.remove(this.mesh);
+      this.mesh.traverse(child => {
+        if (child.geometry) child.geometry.dispose?.();
+        if (child.material) child.material.dispose?.();
+      });
+    }
+  }
+}
+
 // JEFE TALABOT TITÁN - PELEA ESTILO SUPER MARIO 64 (MARIO VS BOWSER)
 export class BossTalabotTitan {
   constructor(scene, arenaCenter = new THREE.Vector3(0, 38.8, 0), particles = null) {
@@ -113,11 +215,19 @@ export class BossTalabotTitan {
     this.mesh = new THREE.Group();
     this.mesh.position.copy(this.position);
 
+    // Radio de la plataforma superior de la arena
+    this.arenaRadius = 8.5;
+
+    // Ondas de choque activas
+    this.shockwaves = [];
+    this.stompImpactTriggered = false;
+    this.ascentPhase = 'boost_up';
+
     // Estado de combate
     this.maxHp = 3;
     this.hp = 3;
     this.phase = 1; // 1 | 2 | 3
-    this.state = 'idle'; // 'dormant' | 'idle' | 'walk' | 'stomp' | 'charge' | 'dizzy' | 'grabbed' | 'thrown' | 'damaged' | 'defeated'
+    this.state = 'idle'; // 'dormant' | 'idle' | 'walk' | 'stomp' | 'charge' | 'dizzy' | 'grabbed' | 'thrown' | 'falling' | 'ascending' | 'damaged' | 'defeated'
     this.timer = 0;
     this.subTimer = 0;
     this.velocity = new THREE.Vector3();
@@ -300,6 +410,14 @@ export class BossTalabotTitan {
     this.timer += dt;
     this.subTimer += dt;
 
+    // Actualizar ondas de choque activas
+    for (let i = this.shockwaves.length - 1; i >= 0; i--) {
+      this.shockwaves[i].update(dt, frog);
+      if (!this.shockwaves[i].active) {
+        this.shockwaves.splice(i, 1);
+      }
+    }
+
     // Actualizar minas perimetrales
     this.mines.forEach(m => m.update(dt));
 
@@ -333,6 +451,10 @@ export class BossTalabotTitan {
       this.updateGrabbed(dt, frog, input, camera);
     } else if (this.state === 'thrown') {
       this.updateThrown(dt, frog, camera);
+    } else if (this.state === 'falling') {
+      this.updateFalling(dt, frog, camera);
+    } else if (this.state === 'ascending') {
+      this.updateAscending(dt, frog, camera);
     } else if (this.state === 'damaged') {
       this.updateDamaged(dt);
     }
@@ -341,6 +463,11 @@ export class BossTalabotTitan {
     if (this.state === 'dizzy' && frog && frog.tongueState === 'attached_boss') {
       this.startGrab(frog);
     }
+  }
+
+  spawnShockwaveRing(pos, color = 0xff3838) {
+    const wave = new BossShockwave(this.scene, pos, 13.0, 1.25, color);
+    this.shockwaves.push(wave);
   }
 
   updateIdle(dt, frog) {
@@ -366,9 +493,12 @@ export class BossTalabotTitan {
     const speed = 2.4 + (this.phase - 1) * 1.2;
     this.mesh.translateZ(speed * dt);
 
-    // Limitar dentro de la arena
+    // Limitar dentro de la arena o caer si excede perímetro
     const distCenter = Math.hypot(this.mesh.position.x - this.arenaCenter.x, this.mesh.position.z - this.arenaCenter.z);
-    if (distCenter > 7.5) {
+    if (distCenter > 8.8) {
+      this.startFalling();
+      return;
+    } else if (distCenter > 7.5) {
       this.mesh.position.x = this.arenaCenter.x + (this.mesh.position.x - this.arenaCenter.x) * (7.5 / distCenter);
       this.mesh.position.z = this.arenaCenter.z + (this.mesh.position.z - this.arenaCenter.z) * (7.5 / distCenter);
     }
@@ -385,27 +515,64 @@ export class BossTalabotTitan {
   }
 
   updateStomp(dt, frog, camera) {
-    // Salto y pisotón con onda expansiva estilo Bowser
-    if (this.subTimer < 0.6) {
-      // Carga en el aire
-      this.mesh.position.y = this.arenaCenter.y + (this.subTimer / 0.6) * 2.5;
-    } else if (this.subTimer < 0.8) {
-      // ¡Caída en seco!
+    // Salto y pisotón con animación de onda expansiva estilo Mario vs Bowser
+    if (this.subTimer < 0.35) {
+      // 1. Anticipación: agacharse comprimiéndose y soltando humo de escape
+      const crouch = Math.sin((this.subTimer / 0.35) * Math.PI) * 0.35;
+      this.mesh.scale.set(1 + crouch * 0.2, 1 - crouch, 1 + crouch * 0.2);
+      this.mesh.position.y = this.arenaCenter.y - crouch * 0.2;
+      if (this.particles && Math.random() < 0.4) {
+        this.particles.spawnDustPuff(this.mesh.position, 2, 0x444444);
+      }
+    } else if (this.subTimer < 0.85) {
+      // 2. Salto propulsado hacia arriba
+      const leapProgress = (this.subTimer - 0.35) / 0.5;
+      this.mesh.scale.set(1, 1, 1);
+      this.mesh.position.y = this.arenaCenter.y + Math.sin(leapProgress * Math.PI * 0.5) * 4.8;
+      this.mesh.rotation.x = -Math.sin(leapProgress * Math.PI) * 0.25;
+
+      if (this.particles && Math.random() < 0.5) {
+        this.particles.spawnDustPuff(this.mesh.position.clone().add(new THREE.Vector3(0, -0.5, 0)), 3, 0x111111);
+      }
+    } else if (this.subTimer < 1.05) {
+      // 3. Suspensión en el punto más alto
+      this.mesh.position.y = this.arenaCenter.y + 4.8;
+      this.mesh.rotation.x = 0;
+      if (this.sirenMat) this.sirenMat.color.setHex(0xff0000);
+    } else if (this.subTimer < 1.25) {
+      // 4. ¡CAÍDA EN PICADA Y PISOTÓN SÍSMICO!
       this.mesh.position.y = this.arenaCenter.y;
-      if (camera) camera.addTrauma(0.5);
-      audio.playLand();
+      this.mesh.scale.set(1.25, 0.75, 1.25); // Squash de impacto cómico
 
-      if (this.particles) {
-        this.particles.spawnShockwave(this.mesh.position, 0xe74c3c);
-        this.particles.spawnDustPuff(this.mesh.position, 20);
+      if (!this.stompImpactTriggered) {
+        this.stompImpactTriggered = true;
+        audio.playShockwaveSlam();
+        if (camera) camera.addTrauma(0.75);
+
+        // ¡Animación de Onda Expansiva en el suelo!
+        this.spawnShockwaveRing(this.mesh.position, 0xff3838);
+
+        // En fase 2 o 3, generar una segunda onda rápida consecutiva
+        if (this.phase >= 2) {
+          setTimeout(() => {
+            if (this.state !== 'defeated') {
+              this.spawnShockwaveRing(this.mesh.position, 0xf1c40f);
+            }
+          }, 240);
+        }
+
+        if (this.particles) {
+          this.particles.spawnDustPuff(this.mesh.position, 28, 0xe74c3c);
+          this.particles.spawnSparks(this.mesh.position, 25);
+        }
       }
-
-      // Si Frogbert está en el suelo cerca y no salta, recibe daño
-      const dist = this.mesh.position.distanceTo(frog.position);
-      if (dist < 8.0 && frog.isGrounded && frog.invulnerableTimer <= 0) {
-        frog.respawnAtCheckpoint();
-      }
-
+    } else if (this.subTimer < 1.6) {
+      // 5. Recuperación tras el impacto
+      const recProgress = (this.subTimer - 1.25) / 0.35;
+      this.mesh.scale.lerp(new THREE.Vector3(1, 1, 1), recProgress);
+    } else {
+      this.mesh.scale.set(1, 1, 1);
+      this.stompImpactTriggered = false;
       this.state = 'idle';
       this.subTimer = 0;
     }
@@ -434,8 +601,14 @@ export class BossTalabotTitan {
 
       // Si llega al borde de la arena: ¡Frena, derrapa y se marea!
       const distCenter = Math.hypot(this.mesh.position.x - this.arenaCenter.x, this.mesh.position.z - this.arenaCenter.z);
-      if (distCenter >= 7.8) {
+      if (distCenter > 8.8) {
+        this.startFalling();
+        return;
+      } else if (distCenter >= 7.8) {
+        this.mesh.position.x = this.arenaCenter.x + (this.mesh.position.x - this.arenaCenter.x) * (7.5 / distCenter);
+        this.mesh.position.z = this.arenaCenter.z + (this.mesh.position.z - this.arenaCenter.z) * (7.5 / distCenter);
         this.startDizzy();
+        return;
       }
     } else {
       this.startDizzy();
@@ -459,6 +632,13 @@ export class BossTalabotTitan {
   }
 
   updateDizzy(dt, frog) {
+    // Si por alguna razón el robot está fuera de la plataforma durante mareo:
+    const distCenter = Math.hypot(this.mesh.position.x - this.arenaCenter.x, this.mesh.position.z - this.arenaCenter.z);
+    if (distCenter > 8.8) {
+      this.startFalling();
+      return;
+    }
+
     // El robot se inclina jadeando / expulsando vapor durante 4 segundos
     this.mesh.rotation.x = Math.sin(this.subTimer * 4.0) * 0.12;
 
@@ -580,14 +760,15 @@ export class BossTalabotTitan {
   updateThrown(dt, frog, camera) {
     // Vuelo parabólico por los aires
     this.mesh.position.add(this.throwVelocity.clone().multiplyScalar(dt));
-    this.throwVelocity.y -= 9.8 * dt; // Gravedad
+    this.throwVelocity.y -= 14.0 * dt; // Gravedad
     this.mesh.rotation.y += dt * 14; // Giros en el aire
+    this.mesh.rotation.x += dt * 4;
 
     // 1. COLISIÓN CON LAS MINAS CON PÚAS PERIMETRALES (OBJETIVO PRINCIPAL)
     for (let mine of this.mines) {
       if (!mine.active) continue;
       const dist = this.mesh.position.distanceTo(mine.position);
-      if (dist < 2.4) {
+      if (dist < 2.5) {
         // ¡IMPACTO DIRECTO CONTRA LA MINA!
         mine.explode();
         this.takeHit(camera);
@@ -595,20 +776,165 @@ export class BossTalabotTitan {
       }
     }
 
-    // 2. Si toca el suelo o se sale de la arena sin tocar mina: IMPACTO FALLIDO
+    // 2. Si desciende al nivel de la plataforma:
     if (this.mesh.position.y <= this.arenaCenter.y) {
-      this.mesh.position.y = this.arenaCenter.y;
-      audio.playLand();
+      const distCenter = Math.hypot(
+        this.mesh.position.x - this.arenaCenter.x,
+        this.mesh.position.z - this.arenaCenter.z
+      );
 
-      if (camera) camera.addTrauma(0.3);
-      if (this.particles) {
-        this.particles.spawnDustPuff(this.mesh.position, 20);
+      // Si cayó DENTRO de la plataforma circular (radio <= 8.5):
+      if (distCenter <= this.arenaRadius) {
+        this.mesh.position.y = this.arenaCenter.y;
+        this.mesh.rotation.x = 0;
+        this.mesh.rotation.z = 0;
+        audio.playLand();
+
+        if (camera) camera.addTrauma(0.35);
+        if (this.particles) {
+          this.particles.spawnDustPuff(this.mesh.position, 20);
+        }
+
+        // Derrapa y regresa al centro
+        this.state = 'walk';
+        this.subTimer = 0;
+        this.recoverFromDizzy();
+      } else {
+        // ¡SE CAYÓ FUERA DE LA PLATAFORMA HACIA EL VACÍO!
+        // No aterriza en el aire; entra en caída libre hacia el abismo
+        this.startFalling();
+      }
+    }
+  }
+
+  startFalling() {
+    this.state = 'falling';
+    this.subTimer = 0;
+    // Mantiene inercia horizontal reducida pero acelera fuertemente hacia abajo
+    this.throwVelocity.x *= 0.35;
+    this.throwVelocity.z *= 0.35;
+    this.throwVelocity.y = Math.min(this.throwVelocity.y, -4.0);
+  }
+
+  updateFalling(dt, frog, camera) {
+    // Caída libre acelerada hacia el abismo de la selva
+    this.throwVelocity.y -= 22.0 * dt;
+    this.mesh.position.add(this.throwVelocity.clone().multiplyScalar(dt));
+
+    // Giro descontrolado / cómico cayendo al vacío
+    this.mesh.rotation.x += dt * 6.0;
+    this.mesh.rotation.z += dt * 4.5;
+    this.mesh.rotation.y += dt * 8.0;
+
+    // Chispas de alarma y pánico
+    if (this.particles && Math.random() < 0.6) {
+      this.particles.spawnSparks(this.mesh.position, 4);
+      this.particles.spawnDustPuff(this.mesh.position, 2, 0x111111);
+    }
+
+    // Cuando cae lo suficiente (18 metros bajo la plataforma) o tras 1.3 segundos
+    if (this.mesh.position.y <= this.arenaCenter.y - 18.0 || this.subTimer > 1.3) {
+      this.startAscending();
+    }
+  }
+
+  startAscending() {
+    this.state = 'ascending';
+    this.subTimer = 0;
+    this.ascentPhase = 'boost_up';
+    audio.playRocketBoost();
+
+    // Reorientar verticalmente
+    this.mesh.rotation.set(0, 0, 0);
+
+    // Luces de emergencia a tope
+    if (this.sirenMat) this.sirenMat.color.setHex(0xff0000);
+  }
+
+  updateAscending(dt, frog, camera) {
+    // Estabilización vertical
+    this.mesh.rotation.x = THREE.MathUtils.lerp(this.mesh.rotation.x, 0, dt * 8.0);
+    this.mesh.rotation.z = THREE.MathUtils.lerp(this.mesh.rotation.z, 0, dt * 8.0);
+
+    // Efecto continuo de propulsores cohete (fuego, humo y chispas bajo las orugas)
+    if (this.particles) {
+      [-1.4, 1.4].forEach(x => {
+        const jetPos = this.mesh.position.clone().add(new THREE.Vector3(x, 0.2, 0));
+        if (Math.random() < 0.8) {
+          this.particles.spawnDustPuff(jetPos, 2, 0xe67e22); // Fuego naranja
+          this.particles.spawnSparks(jetPos, 3); // Chispas amarillas
+        }
+      });
+    }
+
+    if (this.ascentPhase === 'boost_up') {
+      // 1. Ascenso vertical veloz con propulsores desde abajo de la copa
+      const boostSpeed = 24.0;
+      this.mesh.position.y += boostSpeed * dt;
+
+      // Guiado hacia el centro mientras sube
+      this.mesh.position.x = THREE.MathUtils.lerp(this.mesh.position.x, this.arenaCenter.x, dt * 1.5);
+      this.mesh.position.z = THREE.MathUtils.lerp(this.mesh.position.z, this.arenaCenter.z, dt * 1.5);
+
+      // Una vez que supera la plataforma con margen seguro (altura + 6.5 metros):
+      if (this.mesh.position.y >= this.arenaCenter.y + 6.5) {
+        this.ascentPhase = 'fly_to_center';
+        this.subTimer = 0;
+      }
+    } else if (this.ascentPhase === 'fly_to_center') {
+      // 2. Vuelo propulsado hacia el centro de la arena mientras planea arriba
+      this.mesh.position.y = this.arenaCenter.y + 6.5 + Math.sin(this.subTimer * 8.0) * 0.3;
+
+      const toCenter = new THREE.Vector2(
+        this.arenaCenter.x - this.mesh.position.x,
+        this.arenaCenter.z - this.mesh.position.z
+      );
+      const dist = toCenter.length();
+
+      // Encarar al jugador
+      if (frog) {
+        const toFrog = frog.position.clone().sub(this.mesh.position).setY(0);
+        this.mesh.rotation.y = Math.atan2(toFrog.x, toFrog.z);
       }
 
-      // Derrapa y regresa al centro
-      this.state = 'walk';
-      this.subTimer = 0;
-      this.recoverFromDizzy();
+      // Desplazamiento horizontal rápido
+      const flySpeed = Math.min(dist * 5.0, 16.0);
+      if (dist > 0.05) {
+        toCenter.normalize();
+        this.mesh.position.x += toCenter.x * flySpeed * dt;
+        this.mesh.position.z += toCenter.y * flySpeed * dt;
+      }
+
+      // Si ya está casi alineado con el centro de la arena (o timeout):
+      if (dist < 0.8 || this.subTimer > 1.2) {
+        this.ascentPhase = 'slam_land';
+        this.subTimer = 0;
+      }
+    } else if (this.ascentPhase === 'slam_land') {
+      // 3. ¡Corte de motores y caída destructiva en picada al centro!
+      const dropSpeed = 30.0;
+      this.mesh.position.y -= dropSpeed * dt;
+
+      if (this.mesh.position.y <= this.arenaCenter.y) {
+        // ¡Impacto contra el centro de la plataforma!
+        this.mesh.position.set(this.arenaCenter.x, this.arenaCenter.y, this.arenaCenter.z);
+        this.mesh.rotation.set(0, this.mesh.rotation.y, 0);
+
+        audio.playShockwaveSlam();
+        if (camera) camera.addTrauma(0.75);
+
+        // Onda expansiva de aterrizaje y nube de polvo masiva
+        this.spawnShockwaveRing(this.mesh.position, 0xf39c12);
+        if (this.particles) {
+          this.particles.spawnDustPuff(this.mesh.position, 35, 0xe74c3c);
+          this.particles.spawnSparks(this.mesh.position, 30);
+        }
+
+        // Se recupera y vuelve a combate normal
+        this.recoverFromDizzy();
+        this.state = 'idle';
+        this.subTimer = 0;
+      }
     }
   }
 
@@ -656,6 +982,10 @@ export class BossTalabotTitan {
   defeat() {
     this.state = 'defeated';
     audio.playExplosion();
+
+    // Limpiar cualquier onda activa
+    this.shockwaves.forEach(w => w.dispose());
+    this.shockwaves = [];
 
     if (this.trajectoryArrow) {
       this.trajectoryArrow.visible = false;
