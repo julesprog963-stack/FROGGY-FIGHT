@@ -128,9 +128,25 @@ export class BarkBeetle {
       this.mesh.rotation.y = -this.angle + Math.PI / 2;
     }
 
+    this.handleTrunkCollision();
     this.mesh.position.copy(this.position);
     // Tambaleo cómico al correr
     this.mesh.rotation.z = Math.sin(Date.now() * 0.02) * (this.isFleeing ? 0.3 : 0.1);
+  }
+
+  handleTrunkCollision() {
+    if (this.position.y < 40.5) {
+      const t = Math.min(Math.max(this.position.y / 40.0, 0), 1.0);
+      const trunkRadius = 10.5 - t * 2.0;
+      const minDistance = trunkRadius + 0.45;
+      const distXZ = Math.hypot(this.position.x, this.position.z);
+      if (distXZ < minDistance && distXZ > 0.001) {
+        const nx = this.position.x / distXZ;
+        const nz = this.position.z / distXZ;
+        this.position.x = nx * minDistance;
+        this.position.z = nz * minDistance;
+      }
+    }
   }
 }
 
@@ -146,6 +162,10 @@ export class PatrolWasp {
     this.state = 'patrol'; // 'patrol' | 'charging'
     this.chargeCooldown = 0;
 
+    this.leftWing = null;
+    this.rightWing = null;
+    this.glowLight = null;
+
     this.mesh = new THREE.Group();
     this.createModel();
     this.scene.add(this.mesh);
@@ -156,27 +176,89 @@ export class PatrolWasp {
     const bodyMat = new THREE.MeshLambertMaterial({ color: 0xf39c12, flatShading: true });
     const blackMat = new THREE.MeshLambertMaterial({ color: 0x111111, flatShading: true });
 
-    const abdo = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.6, 5), bodyMat);
+    const abdo = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.65, 5), bodyMat);
     abdo.rotation.x = -Math.PI / 2.3;
     abdo.position.set(0, 0, -0.2);
     this.mesh.add(abdo);
 
-    const stinger = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.25, 4), blackMat);
+    const stinger = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.28, 4), blackMat);
     stinger.rotation.x = Math.PI / 2;
-    stinger.position.set(0, -0.05, -0.55);
+    stinger.position.set(0, -0.05, -0.58);
     this.mesh.add(stinger);
 
-    const thorax = new THREE.Mesh(new THREE.SphereGeometry(0.2, 5, 5), blackMat);
+    const thorax = new THREE.Mesh(new THREE.SphereGeometry(0.22, 5, 5), blackMat);
     thorax.position.set(0, 0, 0.1);
     this.mesh.add(thorax);
 
     // Ojos morados malvados
     const eyeMat = new THREE.MeshBasicMaterial({ color: 0x9b59b6 });
     [-0.1, 0.1].forEach(x => {
-      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.08), eyeMat);
+      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.13, 0.09), eyeMat);
       eye.position.set(x, 0.1, 0.22);
       this.mesh.add(eye);
     });
+
+    // Alas translúcidas que aletean a alta velocidad
+    const wingMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.65,
+      side: THREE.DoubleSide
+    });
+    const wingGeo = new THREE.PlaneGeometry(0.38, 0.2);
+    wingGeo.rotateX(Math.PI / 2);
+
+    this.leftWing = new THREE.Mesh(wingGeo, wingMat);
+    this.leftWing.position.set(-0.24, 0.12, 0);
+    this.mesh.add(this.leftWing);
+
+    this.rightWing = new THREE.Mesh(wingGeo, wingMat);
+    this.rightWing.position.set(0.24, 0.12, 0);
+    this.mesh.add(this.rightWing);
+
+    // Luz de advertencia ámbar para resaltar su presencia en la niebla del bosque
+    this.glowLight = new THREE.PointLight(0xff9f1a, 1.2, 5.5);
+    this.glowLight.position.set(0, 0, -0.15);
+    this.mesh.add(this.glowLight);
+  }
+
+  hasLineOfSight(targetPos) {
+    // Comprueba si el cilindro del tronco se interpone entre la avispa y el objetivo
+    const avgY = (this.position.y + targetPos.y) * 0.5;
+    if (avgY >= 40.5) return true; // Por encima de la copa del árbol
+    const t = Math.min(Math.max(avgY / 40.0, 0), 1.0);
+    const trunkRadius = 10.5 - t * 2.0;
+
+    const x1 = this.position.x, z1 = this.position.z;
+    const x2 = targetPos.x, z2 = targetPos.z;
+    const dx = x2 - x1, dz = z2 - z1;
+    const lenSq = dx * dx + dz * dz;
+    if (lenSq < 0.001) return true;
+
+    // Distancia perpendicular mínima desde el centro del tronco (0, 0) al segmento P1->P2
+    const proj = -(x1 * dx + z1 * dz) / lenSq;
+    const clampedT = Math.min(Math.max(proj, 0), 1.0);
+    const closestX = x1 + clampedT * dx;
+    const closestZ = z1 + clampedT * dz;
+    const distSq = closestX * closestX + closestZ * closestZ;
+
+    // Si el rayo pasa a menor distancia que el tronco, el árbol bloquea la visión
+    return distSq >= (trunkRadius * trunkRadius);
+  }
+
+  handleTrunkCollision() {
+    if (this.position.y < 40.8) {
+      const t = Math.min(Math.max(this.position.y / 40.0, 0), 1.0);
+      const trunkRadius = 10.5 - t * 2.0;
+      const minDistance = trunkRadius + 0.65; // Margen de seguridad para que la avispa nunca penetre el tronco
+      const distXZ = Math.hypot(this.position.x, this.position.z);
+      if (distXZ < minDistance && distXZ > 0.001) {
+        const nx = this.position.x / distXZ;
+        const nz = this.position.z / distXZ;
+        this.position.x = nx * minDistance;
+        this.position.z = nz * minDistance;
+      }
+    }
   }
 
   update(dt, frog) {
@@ -186,15 +268,22 @@ export class PatrolWasp {
     }
     this.time += dt * 2.5;
 
-    const distToFrog = this.position.distanceTo(frog.position);
+    // Aleteo rápido de alas
+    const flutter = Math.sin(this.time * 42) * 0.45;
+    if (this.leftWing) this.leftWing.rotation.z = flutter;
+    if (this.rightWing) this.rightWing.rotation.z = -flutter;
 
-    if (distToFrog < 6.0 && this.chargeCooldown <= 0) {
-      // Embiste a la rana
+    const distToFrog = this.position.distanceTo(frog.position);
+    const canSeeFrog = this.hasLineOfSight(frog.position);
+
+    if (distToFrog < 7.0 && this.chargeCooldown <= 0 && canSeeFrog) {
+      // Embiste a la rana en línea recta pero deslizando por la corteza si colisiona
       const chargeDir = frog.position.clone().sub(this.position).normalize();
-      this.position.add(chargeDir.multiplyScalar(6.5 * dt));
+      this.position.add(chargeDir.multiplyScalar(6.8 * dt));
+      this.handleTrunkCollision();
       this.mesh.lookAt(frog.position);
 
-      if (distToFrog < 1.2 && frog.invulnerableTimer <= 0) {
+      if (distToFrog < 1.3 && frog.invulnerableTimer <= 0) {
         // Pica a la rana y la empuja
         frog.velocity.add(chargeDir.multiplyScalar(14));
         frog.respawnAtCheckpoint();
@@ -202,10 +291,11 @@ export class PatrolWasp {
       }
     } else {
       if (this.chargeCooldown > 0) this.chargeCooldown -= dt;
-      // Patrulla circular sobre el abismo
-      this.position.x = this.center.x + Math.cos(this.time) * 3.5;
-      this.position.y = this.center.y + Math.sin(this.time * 2) * 0.7;
-      this.position.z = this.center.z + Math.sin(this.time) * 3.5;
+      // Patrulla circular en órbita alrededor de su punto exterior
+      this.position.x = this.center.x + Math.cos(this.time) * 2.8;
+      this.position.y = this.center.y + Math.sin(this.time * 2) * 0.6;
+      this.position.z = this.center.z + Math.sin(this.time) * 2.8;
+      this.handleTrunkCollision();
       this.mesh.rotation.y = -this.time + Math.PI / 2;
     }
 

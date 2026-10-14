@@ -126,7 +126,43 @@ class Game {
     audioBtn.onclick = () => {
       const isMuted = audio.toggleMute();
       audioBtn.textContent = isMuted ? '🔇 AUDIO: OFF' : '🔊 AUDIO: ON';
+      const pauseAudioBtn = document.getElementById('btn-pause-audio');
+      if (pauseAudioBtn) pauseAudioBtn.textContent = isMuted ? '🔇 AUDIO: OFF' : '🔊 AUDIO: ON';
     };
+
+    // Pausa (tecla ESC o botones en pantalla)
+    this.input.onPauseToggle = () => this.togglePause();
+
+    const pauseBtn = document.getElementById('btn-pause');
+    if (pauseBtn) {
+      pauseBtn.onclick = (e) => {
+        e.stopPropagation();
+        pauseBtn.blur();
+        this.togglePause();
+      };
+    }
+
+    const resumeBtn = document.getElementById('btn-resume');
+    if (resumeBtn) {
+      resumeBtn.onclick = () => this.togglePause();
+    }
+
+    const pauseRestartBtn = document.getElementById('btn-pause-restart');
+    if (pauseRestartBtn) {
+      pauseRestartBtn.onclick = () => {
+        this.togglePause();
+        this.restartGame();
+      };
+    }
+
+    const pauseAudioBtn = document.getElementById('btn-pause-audio');
+    if (pauseAudioBtn) {
+      pauseAudioBtn.onclick = () => {
+        const isMuted = audio.toggleMute();
+        pauseAudioBtn.textContent = isMuted ? '🔇 AUDIO: OFF' : '🔊 AUDIO: ON';
+        if (audioBtn) audioBtn.textContent = isMuted ? '🔇 AUDIO: OFF' : '🔊 AUDIO: ON';
+      };
+    }
 
     const crtBtn = document.getElementById('btn-crt');
     const crtOverlay = document.getElementById('crt-screen');
@@ -152,6 +188,27 @@ class Game {
         }
       }
     });
+  }
+
+  togglePause() {
+    if (this.state === 'playing') {
+      this.prevState = 'playing';
+      this.state = 'paused';
+      const pauseModal = document.getElementById('pause-screen');
+      if (pauseModal) pauseModal.style.display = 'flex';
+      const pauseBtn = document.getElementById('btn-pause');
+      if (pauseBtn) pauseBtn.textContent = '▶️ CONTINUAR';
+      if (document.exitPointerLock) document.exitPointerLock();
+      audio.playPause(true);
+    } else if (this.state === 'paused') {
+      this.state = this.prevState || 'playing';
+      const pauseModal = document.getElementById('pause-screen');
+      if (pauseModal) pauseModal.style.display = 'none';
+      const pauseBtn = document.getElementById('btn-pause');
+      if (pauseBtn) pauseBtn.textContent = '⏸️ PAUSA [ESC]';
+      this.clock.getDelta(); // Limpiar acumulador para evitar saltos temporales
+      audio.playPause(false);
+    }
   }
 
   warpPlayer() {
@@ -225,6 +282,12 @@ class Game {
     const dt = Math.min(this.clock.getDelta(), 0.08);
     document.body.classList.toggle('is-playing', this.state === 'playing');
     this.input.updateGamepad();
+
+    if (this.state === 'paused') {
+      this.renderer.render(this.scene, this.camera);
+      this.input.resetOneShots();
+      return;
+    }
 
     if (this.state === 'cinematic' && this.cinematic) {
       this.particles.update(dt);

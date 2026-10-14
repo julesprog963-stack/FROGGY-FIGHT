@@ -56,7 +56,7 @@
 
   <!-- Guía de controles -->
   <div id="controls-hint">
-    [WASD] Moverse &nbsp;|&nbsp; [ESPACIO] Cargar Salto &nbsp;|&nbsp; [E / Clic] Lengua (Balanceo / Comer)<br>
+    [WASD] Moverse &nbsp;|&nbsp; [ESPACIO] Cargar Salto &nbsp;|&nbsp; [E / Clic] Lengua &nbsp;|&nbsp; [ESC] Pausa<br>
     [Arrastrar Ratón / Q-R] Girar Cámara &nbsp;|&nbsp; [20 Bichos = +1 Vida]
   </div>
 
@@ -87,9 +87,21 @@
 
   <!-- Botones de utilidad -->
   <div id="utility-buttons">
+    <button class="icon-btn" id="btn-pause" style="background: #1e293b; border-color: #f1c40f; color: #f1c40f;">⏸️ PAUSA [ESC]</button>
     <button class="icon-btn" id="btn-warp" style="background: rgba(142, 68, 173, 0.9); border-color: #bb86fc; color: #fff;">🌀 PORTAL: CIMA</button>
     <button class="icon-btn" id="btn-audio">🔊 AUDIO: ON</button>
     <button class="icon-btn" id="btn-crt">📺 CRT: ON</button>
+  </div>
+
+  <!-- Pantalla de Pausa N64 -->
+  <div class="modal-screen" id="pause-screen" style="display: none; background: rgba(8, 14, 18, 0.88); backdrop-filter: blur(5px); z-index: 40;">
+    <h1 class="n64-logo" style="color: #f1c40f; font-size: 34px; margin-bottom: 8px;">⏸️ PAUSA</h1>
+    <div class="subtitle-n64" style="color: #2ecc71; margin-bottom: 20px;">★ JUEGO DETENIDO ★</div>
+    <div style="display: flex; flex-direction: column; gap: 12px; width: 260px; max-width: 90vw;">
+      <button class="btn-n64" id="btn-resume" style="background: #27ae60; border-color: #2ecc71; font-size: 13px;">▶️ CONTINUAR [ESC]</button>
+      <button class="btn-n64 btn-restart" id="btn-pause-restart" style="font-size: 13px;">🔄 REINICIAR NIVEL</button>
+      <button class="btn-n64" id="btn-pause-audio" style="background: #2980b9; border-color: #3498db; font-size: 13px;">🔊 AUDIO: ON</button>
+    </div>
   </div>
 
   <!-- Pantalla de Inicio / Intro -->

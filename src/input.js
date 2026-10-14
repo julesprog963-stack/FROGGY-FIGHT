@@ -21,6 +21,7 @@ export class InputManager {
 
     this.cameraYaw = 0;
     this.onDialogueAdvance = null;
+    this.onPauseToggle = null;
     this.touchPointers = new Map();
 
     this.setupListeners();
@@ -52,6 +53,10 @@ export class InputManager {
 
       if (code === 'Enter') {
         if (this.onDialogueAdvance) this.onDialogueAdvance();
+      }
+
+      if (code === 'Escape') {
+        if (this.onPauseToggle) this.onPauseToggle();
       }
     });
 

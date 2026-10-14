@@ -467,9 +467,9 @@ export class Level {
     });
 
     const waspPositions = [
-      new THREE.Vector3(-9, 15, -6),
-      new THREE.Vector3(5, 24, -9),
-      new THREE.Vector3(10, 32, 6)
+      new THREE.Vector3(-11.5, 15, -7.5),
+      new THREE.Vector3(6.5, 24, -11.5),
+      new THREE.Vector3(11.5, 32, 7.0)
     ];
 
     waspPositions.forEach(pos => {

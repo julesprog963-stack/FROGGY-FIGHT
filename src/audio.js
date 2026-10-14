@@ -43,6 +43,32 @@ class AudioManager {
     return this.isMuted;
   }
 
+  // SFX: Pausa retro estilo N64
+  playPause(isPausing = true) {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'square';
+    if (isPausing) {
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.setValueAtTime(880, now + 0.07);
+    } else {
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.setValueAtTime(520, now + 0.07);
+    }
+
+    gain.gain.setValueAtTime(0.25, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+
+    osc.start(now);
+    osc.stop(now + 0.17);
+  }
+
   // SFX: Salto con muelle / boing estilo Conker
   playJump(powerRatio = 0.5) {
     if (!this.ctx || this.isMuted) return;
