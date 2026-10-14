@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { audio } from './audio.js';
 import { Textures } from './textures.js';
 import { TiltingLeaf, SteppingLPlatform, HangingSwingPlatform, TongueAnchor } from './leaf.js';
 import { SwampFly, BarkBeetle, PatrolWasp } from './bugs.js';
@@ -17,6 +18,149 @@ function createCylinderPlatform(mesh, radius, height) {
   };
 }
 
+// PORTAL DE TESTEO PARA TELETRANSPORTARSE ENTRE LA BASE Y LA CIMA/JEFE
+export class TestPortal {
+  constructor(scene, position, targetPosition, label = 'PORTAL TEST', color = 0x9b59b6) {
+    this.scene = scene;
+    this.position = position.clone();
+    this.targetPosition = targetPosition.clone();
+    this.label = label;
+    this.color = color;
+    this.mesh = new THREE.Group();
+    this.mesh.position.copy(this.position);
+
+    this.timer = 0;
+    this.cooldown = 0;
+
+    this.buildModel();
+    this.scene.add(this.mesh);
+  }
+
+  buildModel() {
+    // 1. Base circular tecnológica/mágica
+    const padGeo = new THREE.CylinderGeometry(1.6, 1.7, 0.3, 16);
+    const padMat = new THREE.MeshLambertMaterial({
+      color: 0x1e272e,
+      flatShading: true
+    });
+    this.padMesh = new THREE.Mesh(padGeo, padMat);
+    this.padMesh.position.y = 0.15;
+    this.mesh.add(this.padMesh);
+
+    // Borde brillante de neón
+    const rimGeo = new THREE.TorusGeometry(1.6, 0.09, 8, 24);
+    rimGeo.rotateX(Math.PI / 2);
+    const rimMat = new THREE.MeshBasicMaterial({ color: this.color });
+    const rim = new THREE.Mesh(rimGeo, rimMat);
+    rim.position.y = 0.3;
+    this.mesh.add(rim);
+
+    // 2. Columna cilíndrica de luz translúcida
+    const beamGeo = new THREE.CylinderGeometry(1.2, 1.2, 3.4, 16, 1, true);
+    this.beamMat = new THREE.MeshBasicMaterial({
+      color: this.color,
+      transparent: true,
+      opacity: 0.35,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    const beam = new THREE.Mesh(beamGeo, this.beamMat);
+    beam.position.y = 1.8;
+    this.mesh.add(beam);
+
+    // 3. Vórtices flotantes giratorios
+    const vortexGeo = new THREE.TorusGeometry(1.15, 0.08, 8, 24);
+    vortexGeo.rotateX(Math.PI / 2);
+    this.vortex1 = new THREE.Mesh(vortexGeo, new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true }));
+    this.vortex1.position.y = 1.0;
+    this.mesh.add(this.vortex1);
+
+    this.vortex2 = new THREE.Mesh(vortexGeo, new THREE.MeshBasicMaterial({ color: this.color, wireframe: true }));
+    this.vortex2.position.y = 2.2;
+    this.mesh.add(this.vortex2);
+
+    // 4. Diamante holográfico flotante en la cima del portal
+    const crystalGeo = new THREE.OctahedronGeometry(0.48, 0);
+    this.crystalMat = new THREE.MeshBasicMaterial({ color: this.color, wireframe: true });
+    this.crystal = new THREE.Mesh(crystalGeo, this.crystalMat);
+    this.crystal.position.y = 3.6;
+    this.mesh.add(this.crystal);
+
+    // Luz puntual emisiva
+    this.light = new THREE.PointLight(this.color, 2.0, 9);
+    this.light.position.set(0, 2.0, 0);
+    this.mesh.add(this.light);
+  }
+
+  update(dt, frog, particles = null) {
+    this.timer += dt;
+    if (this.cooldown > 0) this.cooldown -= dt;
+
+    if (this.vortex1) {
+      this.vortex1.rotation.z += dt * 3.2;
+      this.vortex1.position.y = 1.0 + Math.sin(this.timer * 3.5) * 0.25;
+    }
+    if (this.vortex2) {
+      this.vortex2.rotation.z -= dt * 2.6;
+      this.vortex2.position.y = 2.2 + Math.cos(this.timer * 3.5) * 0.25;
+    }
+    if (this.crystal) {
+      this.crystal.rotation.y += dt * 2.0;
+      this.crystal.rotation.x = Math.sin(this.timer * 2.0) * 0.2;
+      this.crystal.position.y = 3.6 + Math.sin(this.timer * 4.0) * 0.2;
+    }
+    if (this.beamMat) {
+      this.beamMat.opacity = 0.25 + Math.sin(this.timer * 5.0) * 0.15;
+    }
+
+    if (particles && Math.random() < 0.25) {
+      const pPos = this.position.clone().add(new THREE.Vector3(
+        (Math.random() - 0.5) * 1.6,
+        0.4 + Math.random() * 2.2,
+        (Math.random() - 0.5) * 1.6
+      ));
+      particles.spawnSparks(pPos, 2);
+    }
+
+    // Teletransporte al entrar al portal
+    const dist = Math.hypot(frog.position.x - this.position.x, frog.position.z - this.position.z);
+    const yDiff = Math.abs(frog.position.y - this.position.y);
+
+    if (dist < 1.7 && yDiff < 2.5 && this.cooldown <= 0) {
+      this.teleport(frog, particles);
+    }
+  }
+
+  teleport(frog, particles = null) {
+    this.cooldown = 2.0;
+
+    if (particles) {
+      particles.spawnShockwave(frog.position, this.color);
+      particles.spawnDustPuff(frog.position, 25, this.color);
+      particles.spawnSparks(frog.position, 20);
+    }
+
+    audio.playTongueShoot();
+    audio.play1Up();
+
+    frog.position.copy(this.targetPosition);
+    frog.prevPosition.copy(this.targetPosition);
+    frog.velocity.set(0, 0, 0);
+
+    if (this.targetPosition.y > 35) {
+      frog.lastCheckpoint.copy(this.targetPosition);
+    } else {
+      frog.lastCheckpoint.set(0, 1.6, 11);
+    }
+
+    if (particles) {
+      particles.spawnShockwave(this.targetPosition, this.color);
+      particles.spawnDustPuff(this.targetPosition, 30, 0x00ffff);
+      particles.spawnSparks(this.targetPosition, 25);
+    }
+  }
+}
+
 export class Level {
   constructor(scene) {
     this.scene = scene;
@@ -28,6 +172,7 @@ export class Level {
     this.checkpoints = [];
     this.npcs = [];
     this.coins = [];
+    this.portals = [];
     this.swampRadius = 72.0;
 
     this.trunkMesh = null;
@@ -47,6 +192,7 @@ export class Level {
     this.buildToxicDrainageEasterEgg();
     this.spawnNPCs();
     this.spawnCoins();
+    this.buildTestPortals();
     buildForestAtmosphere(this.scene);
   }
 
@@ -745,10 +891,43 @@ export class Level {
     });
   }
 
+  buildTestPortals() {
+    // 1. Portal en la BASE (junto al hongo de inicio en x=4.5, z=11.0)
+    const basePortalPos = new THREE.Vector3(4.5, 1.2, 11.0);
+    const summitDestPos = new THREE.Vector3(0, 41.2, 5.0);
+    const basePortal = new TestPortal(
+      this.scene,
+      basePortalPos,
+      summitDestPos,
+      'PORTAL CIMA 🚀',
+      0x9b59b6 // Púrpura místico
+    );
+    this.portals.push(basePortal);
+    this.platforms.push(createCylinderPlatform(basePortal.padMesh, 1.6, 0.3));
+
+    // 2. Portal en la CIMA (en el perímetro de la arena para volver a la base si se desea)
+    const summitPortalPos = new THREE.Vector3(5.8, 40.8, 3.5);
+    const baseDestPos = new THREE.Vector3(0, 1.8, 11.0);
+    const summitPortal = new TestPortal(
+      this.scene,
+      summitPortalPos,
+      baseDestPos,
+      'PORTAL BASE 🍄',
+      0x00ff88 // Verde esmeralda
+    );
+    this.portals.push(summitPortal);
+    this.platforms.push(createCylinderPlatform(summitPortal.padMesh, 1.6, 0.3));
+  }
+
   update(dt, frog, hud = null, input = null) {
     this.tiltingLeaves.forEach(leaf => leaf.update(dt));
     this.hangingPlatforms.forEach(p => p.update(dt));
     this.anchors.forEach(a => a.update(dt));
+
+    // Actualizar portales de testeo
+    this.portals.forEach(portal => {
+      portal.update(dt, frog, frog.particles);
+    });
 
     this.bugs.forEach(bug => {
       if (bug.type === 'fly') bug.update(dt);

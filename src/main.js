@@ -136,6 +136,15 @@ class Game {
       crtBtn.textContent = isVisible ? '📺 CRT: OFF' : '📺 CRT: ON';
     };
 
+    const warpBtn = document.getElementById('btn-warp');
+    if (warpBtn) {
+      warpBtn.onclick = (e) => {
+        e.stopPropagation();
+        warpBtn.blur();
+        this.warpPlayer();
+      };
+    }
+
     this.renderer.domElement.addEventListener('click', () => {
       if (this.state === 'playing') {
         if (window.matchMedia('(pointer: fine)').matches) {
@@ -143,6 +152,40 @@ class Game {
         }
       }
     });
+  }
+
+  warpPlayer() {
+    if (!this.player) return;
+    const warpBtn = document.getElementById('btn-warp');
+    const toSummit = this.player.position.y < 30;
+
+    if (toSummit) {
+      // Teletransportar directamente a la cima frente a la arena del jefe
+      this.player.position.set(0, 41.2, 5.0);
+      this.player.prevPosition.copy(this.player.position);
+      this.player.velocity.set(0, 0, 0);
+      this.player.lastCheckpoint.set(0, 41.2, 5.0);
+      if (warpBtn) warpBtn.textContent = '🌀 PORTAL: BASE';
+    } else {
+      // Teletransportar de vuelta a la base del pantano
+      this.player.position.set(0, 1.8, 11.0);
+      this.player.prevPosition.copy(this.player.position);
+      this.player.velocity.set(0, 0, 0);
+      this.player.lastCheckpoint.set(0, 1.6, 11.0);
+      if (warpBtn) warpBtn.textContent = '🌀 PORTAL: CIMA';
+    }
+
+    if (this.particles) {
+      this.particles.spawnShockwave(this.player.position, toSummit ? 0x9b59b6 : 0x00ff88);
+      this.particles.spawnDustPuff(this.player.position, 25, toSummit ? 0xbb86fc : 0x00ffff);
+      this.particles.spawnSparks(this.player.position, 20);
+    }
+    audio.playTongueShoot();
+    audio.play1Up();
+
+    if (this.tpCamera) {
+      this.tpCamera.resetPosition();
+    }
   }
 
   onWindowResize() {
@@ -217,6 +260,16 @@ class Game {
       this.tpCamera.update(dt);
 
       const height = this.player.position.y;
+
+      const warpBtn = document.getElementById('btn-warp');
+      if (warpBtn) {
+        const toSummit = height < 30;
+        const targetLabel = toSummit ? '🌀 PORTAL: CIMA' : '🌀 PORTAL: BASE';
+        if (warpBtn.textContent !== targetLabel) {
+          warpBtn.textContent = targetLabel;
+        }
+      }
+
       if (height > 36) {
         audio.setTrack('boss');
         this.boss.update(dt, this.player, this.tpCamera, this.input);
