@@ -201,7 +201,9 @@ export class CinematicIntro {
     if (this.hud) {
       this.hud.showDialogue(
         'FROGBERT',
-        'Zzz... Zzz... Qué sabrosa siesta en lo alto del Árbol Sagrado... Zzz...'
+        'Zzz... Zzz... Qué sabrosa siesta en lo alto del Árbol Sagrado... Zzz...',
+        null,
+        () => this.advanceToWakeUp()
       );
     }
   }
@@ -351,10 +353,12 @@ export class CinematicIntro {
         audio.playFrogSnore();
       }
 
-      if (this.hud && this.hud.dialogueBox.style.display !== 'flex') {
+      if (this.hud) {
         this.hud.showDialogue(
           'FROGBERT',
-          'Zzz... Zzz... Qué sabrosa siesta en lo alto del Árbol Sagrado... Zzz...'
+          'Zzz... Zzz... Qué sabrosa siesta en lo alto del Árbol Sagrado... Zzz...',
+          null,
+          () => this.advanceToWakeUp()
         );
       }
 
@@ -400,10 +404,14 @@ export class CinematicIntro {
         if (tb.sawBlade) tb.sawBlade.rotation.x += dt * 10;
       });
 
-      if (this.hud && this.time > 4.2 && this.hud.dialogueBox.innerText.indexOf('ruido') === -1) {
+      if (this.hud && this.time > 4.2) {
         this.hud.showDialogue(
           'FROGBERT',
-          '¿¡EH...!? ¿¡Qué es ese ruido estridente?! ¿¡Quiénes son ustedes y qué hacen en mi árbol?!'
+          '¿¡EH...!? ¿¡Qué es ese ruido estridente?! ¿¡Quiénes son ustedes y qué hacen en mi árbol?!',
+          null,
+          () => {
+            this.time = 6.0;
+          }
         );
       }
 
@@ -426,10 +434,14 @@ export class CinematicIntro {
         if (tb.sawBlade) tb.sawBlade.rotation.x += dt * 18;
       });
 
-      if (this.hud && this.hud.dialogueBox.innerText.indexOf('DUEÑO') === -1) {
+      if (this.hud) {
         this.hud.showDialogue(
           'PATO LEMUS',
-          '¡CROAK, PEQUEÑA RANA...!\nESTE BOSQUE YA TIENE DUEÑO.\nTALACORP LO HACE MÁS GRANDE... AUNQUE TENGA QUE SECARLO TODO.\n¡Y TÚ ESTÁS DESPEDIDO DE ESTE ÁRBOL!'
+          '¡CROAK, PEQUEÑA RANA...!\nESTE BOSQUE YA TIENE DUEÑO.\nTALACORP LO HACE MÁS GRANDE... AUNQUE TENGA QUE SECARLO TODO.\n¡Y TÚ ESTÁS DESPEDIDO DE ESTE ÁRBOL!',
+          null,
+          () => {
+            this.time = 10.5;
+          }
         );
       }
 
@@ -578,10 +590,14 @@ export class CinematicIntro {
       this.camera.position.lerp(new THREE.Vector3(0, 2.8, 15.2), 0.08);
       this.camera.lookAt(this.player.position.x, this.player.position.y + 0.6, this.player.position.z);
 
-      if (this.hud && this.hud.dialogueBox.style.display !== 'flex') {
+      if (this.hud) {
         this.hud.showDialogue(
           'FROGBERT',
-          '¡GRRR! ¡Maldito Pato Lemus y su corporación TALACORP! ¡Pisotearon mi siesta y me lanzaron desde la copa del árbol! ¡Subiré de vuelta hasta la cima y recuperaré mi hogar!'
+          '¡GRRR! ¡Maldito Pato Lemus y su corporación TALACORP! ¡Pisotearon mi siesta y me lanzaron desde la copa del árbol! ¡Subiré de vuelta hasta la cima y recuperaré mi hogar!',
+          null,
+          () => {
+            this.finish();
+          }
         );
       }
 
@@ -589,6 +605,52 @@ export class CinematicIntro {
       // FASE 7: FIN DE CINEMÁTICA Y PASO A GAMEPLAY ACTIVO
       this.finish();
     }
+  }
+
+  advanceToWakeUp() {
+    this.time = 4.3;
+    this.phase = 'wake_up';
+    this.wokeUp = true;
+    this.zzzSprites.forEach(item => { item.sprite.visible = false; });
+    this.player.setSleepingPose(false);
+    this.player.eyelids.forEach(el => { el.rotation.x = -Math.PI / 1.9; });
+    this.player.mesh.rotation.set(-0.15, 2.95, 0);
+    this.player.mesh.position.y = this.elevationY + 0.55;
+    this.camera.position.set(-0.65, this.elevationY + 1.70, 29.2);
+    this.camera.lookAt(0.35, this.elevationY + 2.70, 22.4);
+    if (this.hud) {
+      this.hud.showDialogue(
+        'FROGBERT',
+        '¿¡EH...!? ¿¡Qué es ese ruido estridente?! ¿¡Quiénes son ustedes y qué hacen en mi árbol?!',
+        null,
+        () => this.advanceToConfrontation()
+      );
+    }
+  }
+
+  advanceToConfrontation() {
+    this.time = 6.1;
+    this.phase = 'confrontation';
+    this.camera.position.set(-0.65, this.elevationY + 1.70, 29.2);
+    this.camera.lookAt(0.35, this.elevationY + 2.70, 22.4);
+    this.player.position.set(-1.75, this.elevationY + 0.55, 26.8);
+    this.player.mesh.position.copy(this.player.position);
+    this.player.mesh.scale.set(0.72, 0.72, 0.72);
+    this.player.mesh.rotation.set(-0.15, 2.95, 0);
+    if (this.hud) {
+      this.hud.showDialogue(
+        'PATO LEMUS',
+        '¡CROAK, PEQUEÑA RANA...!\nESTE BOSQUE YA TIENE DUEÑO.\nTALACORP LO HACE MÁS GRANDE... AUNQUE TENGA QUE SECARLO TODO.\n¡Y TÚ ESTÁS DESPEDIDO DE ESTE ÁRBOL!',
+        null,
+        () => this.advanceToKick()
+      );
+    }
+  }
+
+  advanceToKick() {
+    this.time = 10.5;
+    this.phase = 'kick';
+    if (this.hud) this.hud.closeDialogue();
   }
 
   skip() {
@@ -611,10 +673,14 @@ export class CinematicIntro {
     this.player.setSleepingPose(false);
     this.player.setAngryPose(true);
 
-    if (this.hud && this.hud.dialogueBox.style.display !== 'flex') {
+    if (this.hud) {
       this.hud.showDialogue(
         'FROGBERT',
-        '¡GRRR! ¡Maldito Pato Lemus y sus hojalatas de TALACORP! ¡Pisotearon mi siesta y talaron mi bosque sagrado! ¡Subiré hasta la cima de este árbol y le daré su merecido a patadas!'
+        '¡GRRR! ¡Maldito Pato Lemus y sus hojalatas de TALACORP! ¡Pisotearon mi siesta y talaron mi bosque sagrado! ¡Subiré hasta la cima de este árbol y le daré su merecido a patadas!',
+        null,
+        () => {
+          this.hud.closeDialogue();
+        }
       );
     }
 

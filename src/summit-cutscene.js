@@ -85,7 +85,11 @@ export class SummitCutscene {
       if (this.hud) {
         this.hud.showDialogue(
           'PATO LEMUS',
-          '¡¿TÚ OTRA VEZ, RENACUAJO INSOLENTE?! ¿Lograste escalar todo el Árbol Sagrado? ¡Una lástima que mi tiempo es demasiado valioso como para ensuciarme las plumas contigo!'
+          '¡¿TÚ OTRA VEZ, RENACUAJO INSOLENTE?! ¿Lograste escalar todo el Árbol Sagrado? ¡Una lástima que mi tiempo es demasiado valioso como para ensuciarme las plumas contigo!',
+          null,
+          () => {
+            this.time = 4.5;
+          }
         );
       }
 
@@ -101,7 +105,12 @@ export class SummitCutscene {
         if (this.hud) {
           this.hud.showDialogue(
             'PATO LEMUS',
-            '¡TALABOT TITÁN, HAZLO PURÉ DE RANA! ¡Yo me voy en mi helicóptero a talar otro pantano! ¡JAJAJA, HASTA NUNCA!'
+            '¡TALABOT TITÁN, HAZLO PURÉ DE RANA! ¡Yo me voy en mi helicóptero a talar otro pantano! ¡JAJAJA, HASTA NUNCA!',
+            null,
+            () => {
+              this.hud.closeDialogue();
+              this.time = 8.2;
+            }
           );
         }
       }

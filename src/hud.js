@@ -13,16 +13,22 @@ export class HUD {
     this.dialogueBox = document.getElementById('n64-dialogue-box');
     this.dialogueText = document.getElementById('dialogue-content');
     this.dialogueSpeaker = document.getElementById('dialogue-speaker');
+    this.dialogueHint = this.dialogueBox ? this.dialogueBox.querySelector('.dialogue-hint') : null;
     this.victoryScreen = document.getElementById('victory-screen');
     this.gameOverScreen = document.getElementById('game-over-screen');
     this.jumpCharge = document.getElementById('jump-charge');
     this.jumpChargeFill = document.getElementById('jump-charge-fill');
     this.jumpChargeLabel = document.getElementById('jump-charge-label');
 
+    this.currentSpeaker = '';
     this.currentText = '';
     this.textIndex = 0;
     this.typewriterTimer = null;
+    this.isTyping = false;
+    this.dialogueQueue = [];
     this.onDialogueClose = null;
+    this.onDialogueNext = null;
+    this.lastDismissedKey = null;
     this.activeNearNpc = null;
 
     if (this.interactBtn) {
@@ -38,7 +44,7 @@ export class HUD {
     if (this.dialogueBox) {
       this.dialogueBox.addEventListener('click', (e) => {
         e.stopPropagation();
-        this.closeDialogue();
+        this.advanceDialogue();
       });
     }
   }
@@ -91,15 +97,40 @@ export class HUD {
     }
   }
 
-  showDialogue(speaker, text, onClose = null) {
+  showDialogue(speaker, textOrLines, onClose = null, onNext = null) {
+    const lines = Array.isArray(textOrLines) ? [...textOrLines] : [textOrLines];
+    const initialText = lines.shift() || '';
+    const dialogueKey = `${speaker}:::${initialText}`;
+
+    // Si ya se está mostrando exactamente este diálogo (mismo orador y texto)
+    if (this.dialogueBox.style.display === 'flex' && this.currentSpeaker === speaker && this.currentText === initialText) {
+      return;
+    }
+
+    // Si este diálogo ya fue descartado o avanzado y la caja está cerrada, no reactivarlo en bucles de frame
+    if (this.dialogueBox.style.display !== 'flex' && this.lastDismissedKey === dialogueKey) {
+      return;
+    }
+
     document.body.classList.add('in-dialogue');
-    this.dialogueSpeaker.textContent = speaker;
-    this.dialogueBox.style.display = 'flex';
+    this.currentSpeaker = speaker;
+    this.dialogueQueue = lines;
+    this.onDialogueClose = onClose;
+    this.onDialogueNext = onNext;
+
+    if (this.dialogueSpeaker) this.dialogueSpeaker.textContent = speaker;
     if (this.interactBtn) this.interactBtn.style.display = 'none';
+    this.dialogueBox.style.display = 'flex';
+
+    this.startTypewriter(initialText);
+  }
+
+  startTypewriter(text) {
     this.currentText = text;
     this.textIndex = 0;
     this.dialogueText.textContent = '';
-    this.onDialogueClose = onClose;
+    this.isTyping = true;
+    this.updateDialogueHint();
 
     if (this.typewriterTimer) clearInterval(this.typewriterTimer);
 
@@ -112,17 +143,73 @@ export class HUD {
         }
       } else {
         clearInterval(this.typewriterTimer);
+        this.typewriterTimer = null;
+        this.isTyping = false;
+        this.updateDialogueHint();
       }
     }, 28);
+  }
+
+  updateDialogueHint() {
+    if (!this.dialogueHint) return;
+    if (this.isTyping) {
+      this.dialogueHint.textContent = '⏩ [ESPACIO: Omitir]';
+    } else {
+      const hasMore = (this.dialogueQueue && this.dialogueQueue.length > 0) || Boolean(this.onDialogueNext);
+      this.dialogueHint.textContent = hasMore ? '▶ [ESPACIO: Siguiente]' : '▼ [ESPACIO: Continuar]';
+    }
+  }
+
+  advanceDialogue() {
+    if (this.dialogueBox.style.display !== 'flex') return;
+
+    // 1. Si aún está escribiéndose letra por letra: COMPLETAR INMEDIATAMENTE
+    if (this.isTyping) {
+      if (this.typewriterTimer) {
+        clearInterval(this.typewriterTimer);
+        this.typewriterTimer = null;
+      }
+      this.textIndex = this.currentText.length;
+      this.dialogueText.textContent = this.currentText;
+      this.isTyping = false;
+      audio.playBlab();
+      this.updateDialogueHint();
+      return;
+    }
+
+    // 2. Si ya está completo: PASAR AL SIGUIENTE TEXTO EN COLA
+    if (this.dialogueQueue && this.dialogueQueue.length > 0) {
+      const nextLine = this.dialogueQueue.shift();
+      audio.playBlab();
+      this.startTypewriter(nextLine);
+      return;
+    }
+
+    // 3. Si no hay más texto en cola: avanzar de fase en cinemáticas o cerrar
+    this.lastDismissedKey = `${this.currentSpeaker}:::${this.currentText}`;
+    const nextCb = this.onDialogueNext;
+    this.onDialogueNext = null;
+
+    if (nextCb) {
+      nextCb();
+    } else {
+      this.closeDialogue();
+    }
   }
 
   closeDialogue() {
     document.body.classList.remove('in-dialogue');
     this.dialogueBox.style.display = 'none';
-    if (this.typewriterTimer) clearInterval(this.typewriterTimer);
+    if (this.typewriterTimer) {
+      clearInterval(this.typewriterTimer);
+      this.typewriterTimer = null;
+    }
+    this.isTyping = false;
+    this.dialogueQueue = [];
     if (this.onDialogueClose) {
-      this.onDialogueClose();
+      const cb = this.onDialogueClose;
       this.onDialogueClose = null;
+      cb();
     }
   }
 

@@ -37,6 +37,11 @@ export class InputManager {
       if (code === 'KeyD') this.keys.right = true;
       
       if (code === 'Space') {
+        if (document.body.classList.contains('in-dialogue')) {
+          e.preventDefault();
+          if (this.onDialogueAdvance) this.onDialogueAdvance();
+          return;
+        }
         if (!this.keys.isJumpHeld) {
           this.keys.jumpPressed = true;
         }

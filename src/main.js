@@ -86,26 +86,139 @@ class Game {
   setupUI() {
     const startBtn = document.getElementById('btn-start');
     const skipBtn = document.getElementById('btn-skip-cinematic');
+    const optionsBtn = document.getElementById('btn-options');
+    const controlsBtn = document.getElementById('btn-controls');
+    const creditsBtn = document.getElementById('btn-credits');
 
-    startBtn.onclick = () => {
-      audio.init();
-      document.getElementById('start-screen').style.display = 'none';
-      if (skipBtn) skipBtn.style.display = 'block';
+    const modalOptions = document.getElementById('modal-options');
+    const modalControls = document.getElementById('modal-controls');
+    const modalCredits = document.getElementById('modal-credits');
 
-      this.state = 'cinematic';
-      this.cinematic = new CinematicIntro(
-        this.scene,
-        this.camera,
-        this.player,
-        this.hud,
-        () => {
-          this.state = 'playing';
-          if (skipBtn) skipBtn.style.display = 'none';
-          this.cinematic = null;
-          this.tpCamera.resetPosition();
-        }
-      );
+    const audioBtn = document.getElementById('btn-audio');
+    const pauseAudioBtn = document.getElementById('btn-pause-audio');
+    const optAudioBtn = document.getElementById('btn-options-audio');
+
+    const crtBtn = document.getElementById('btn-crt');
+    const optCrtBtn = document.getElementById('btn-options-crt');
+    const crtOverlay = document.getElementById('crt-screen');
+
+    // Sincronización de Audio en todos los botones
+    const syncAudioUI = (isMuted) => {
+      const label = isMuted ? '🔇 AUDIO: OFF' : '🔊 AUDIO: ON';
+      if (audioBtn) audioBtn.textContent = label;
+      if (pauseAudioBtn) pauseAudioBtn.textContent = label;
+      if (optAudioBtn) optAudioBtn.textContent = label;
     };
+
+    // Sincronización de CRT en todos los botones
+    const syncCrtUI = (isOn) => {
+      crtOverlay.style.display = isOn ? 'block' : 'none';
+      const label = isOn ? '📺 CRT: ON' : '📺 CRT: OFF';
+      if (crtBtn) crtBtn.textContent = label;
+      if (optCrtBtn) optCrtBtn.textContent = label;
+    };
+
+    // Sonidos hover en botones de la pantalla de inicio
+    [startBtn, optionsBtn, controlsBtn, creditsBtn].forEach((btn) => {
+      if (btn) {
+        btn.addEventListener('mouseenter', () => audio.playMenuHover());
+        btn.addEventListener('focus', () => audio.playMenuHover());
+      }
+    });
+
+    // 1. Botón JUGAR
+    if (startBtn) {
+      startBtn.onclick = () => {
+        audio.init();
+        audio.playMenuSelect();
+        document.getElementById('start-screen').style.display = 'none';
+        const utilBtns = document.getElementById('utility-buttons');
+        if (utilBtns) utilBtns.style.display = 'flex';
+        if (skipBtn) skipBtn.style.display = 'block';
+
+        this.state = 'cinematic';
+        this.cinematic = new CinematicIntro(
+          this.scene,
+          this.camera,
+          this.player,
+          this.hud,
+          () => {
+            this.state = 'playing';
+            if (skipBtn) skipBtn.style.display = 'none';
+            this.cinematic = null;
+            this.tpCamera.resetPosition();
+          }
+        );
+      };
+    }
+
+    // 2. Botón OPCIONES
+    if (optionsBtn) {
+      optionsBtn.onclick = () => {
+        audio.init();
+        audio.playMenuSelect();
+        if (modalOptions) modalOptions.style.display = 'flex';
+      };
+    }
+
+    // 3. Botón CONTROLES
+    if (controlsBtn) {
+      controlsBtn.onclick = () => {
+        audio.init();
+        audio.playMenuSelect();
+        if (modalControls) modalControls.style.display = 'flex';
+      };
+    }
+
+    // 4. Botón SALIR
+    if (creditsBtn) {
+      creditsBtn.onclick = () => {
+        audio.init();
+        audio.playMenuSelect();
+        if (modalCredits) modalCredits.style.display = 'flex';
+      };
+    }
+
+    // Cerrar submodales
+    const closeSubmodals = () => {
+      audio.playMenuSelect();
+      if (modalOptions) modalOptions.style.display = 'none';
+      if (modalControls) modalControls.style.display = 'none';
+      if (modalCredits) modalCredits.style.display = 'none';
+    };
+
+    const closeOptBtn = document.getElementById('btn-close-options');
+    if (closeOptBtn) closeOptBtn.onclick = closeSubmodals;
+
+    const closeCtrlBtn = document.getElementById('btn-close-controls');
+    if (closeCtrlBtn) closeCtrlBtn.onclick = closeSubmodals;
+
+    const closeCredBtn = document.getElementById('btn-close-credits');
+    if (closeCredBtn) closeCredBtn.onclick = closeSubmodals;
+
+    const reloadBtn = document.getElementById('btn-action-reload');
+    if (reloadBtn) {
+      reloadBtn.onclick = () => {
+        window.location.reload();
+      };
+    }
+
+    // Botones de audio
+    const toggleAudioAction = () => {
+      const isMuted = audio.toggleMute();
+      syncAudioUI(isMuted);
+    };
+    if (audioBtn) audioBtn.onclick = toggleAudioAction;
+    if (pauseAudioBtn) pauseAudioBtn.onclick = toggleAudioAction;
+    if (optAudioBtn) optAudioBtn.onclick = toggleAudioAction;
+
+    // Botones de CRT
+    const toggleCrtAction = () => {
+      const willBeOn = crtOverlay.style.display === 'none';
+      syncCrtUI(willBeOn);
+    };
+    if (crtBtn) crtBtn.onclick = toggleCrtAction;
+    if (optCrtBtn) optCrtBtn.onclick = toggleCrtAction;
 
     if (skipBtn) {
       skipBtn.onclick = () => {
@@ -118,20 +231,29 @@ class Game {
 
     this.input.onDialogueAdvance = () => {
       if (document.getElementById('n64-dialogue-box').style.display === 'flex') {
-        this.hud.closeDialogue();
+        this.hud.advanceDialogue();
       }
     };
 
-    const audioBtn = document.getElementById('btn-audio');
-    audioBtn.onclick = () => {
-      const isMuted = audio.toggleMute();
-      audioBtn.textContent = isMuted ? '🔇 AUDIO: OFF' : '🔊 AUDIO: ON';
-      const pauseAudioBtn = document.getElementById('btn-pause-audio');
-      if (pauseAudioBtn) pauseAudioBtn.textContent = isMuted ? '🔇 AUDIO: OFF' : '🔊 AUDIO: ON';
-    };
-
     // Pausa (tecla ESC o botones en pantalla)
-    this.input.onPauseToggle = () => this.togglePause();
+    this.input.onPauseToggle = () => {
+      // Si estamos en la pantalla de inicio con algún submodal abierto, cerrarlo con ESC
+      if (modalOptions && modalOptions.style.display === 'flex') {
+        closeSubmodals();
+        return;
+      }
+      if (modalControls && modalControls.style.display === 'flex') {
+        closeSubmodals();
+        return;
+      }
+      if (modalCredits && modalCredits.style.display === 'flex') {
+        closeSubmodals();
+        return;
+      }
+      if (this.state === 'playing' || this.isPaused) {
+        this.togglePause();
+      }
+    };
 
     const pauseBtn = document.getElementById('btn-pause');
     if (pauseBtn) {
@@ -154,23 +276,6 @@ class Game {
         this.restartGame();
       };
     }
-
-    const pauseAudioBtn = document.getElementById('btn-pause-audio');
-    if (pauseAudioBtn) {
-      pauseAudioBtn.onclick = () => {
-        const isMuted = audio.toggleMute();
-        pauseAudioBtn.textContent = isMuted ? '🔇 AUDIO: OFF' : '🔊 AUDIO: ON';
-        if (audioBtn) audioBtn.textContent = isMuted ? '🔇 AUDIO: OFF' : '🔊 AUDIO: ON';
-      };
-    }
-
-    const crtBtn = document.getElementById('btn-crt');
-    const crtOverlay = document.getElementById('crt-screen');
-    crtBtn.onclick = () => {
-      const isVisible = crtOverlay.style.display !== 'none';
-      crtOverlay.style.display = isVisible ? 'none' : 'block';
-      crtBtn.textContent = isVisible ? '📺 CRT: OFF' : '📺 CRT: ON';
-    };
 
     const warpBtn = document.getElementById('btn-warp');
     if (warpBtn) {

@@ -86,7 +86,7 @@
   </div>
 
   <!-- Botones de utilidad -->
-  <div id="utility-buttons">
+  <div id="utility-buttons" style="display: none;">
     <button class="icon-btn" id="btn-pause" style="background: #1e293b; border-color: #f1c40f; color: #f1c40f;">⏸️ PAUSA [ESC]</button>
     <button class="icon-btn" id="btn-warp" style="background: rgba(142, 68, 173, 0.9); border-color: #bb86fc; color: #fff;">🌀 PORTAL: CIMA</button>
     <button class="icon-btn" id="btn-audio">🔊 AUDIO: ON</button>
@@ -104,19 +104,91 @@
     </div>
   </div>
 
-  <!-- Pantalla de Inicio / Intro -->
+  <!-- Pantalla de Inicio / Title Screen con Arte Oficial -->
   <div class="modal-screen" id="start-screen">
-    <h1 class="n64-logo">EL ASCENSO DE<br><span style="color: #2ecc71; text-shadow: 4px 4px 0 #000, 6px 6px 0 #14532d;">FROGBERT</span></h1>
-    <div class="subtitle-n64">★ VENGANZA EN EL ÁRBOL SAGRADO ★</div>
-    <div class="story-card" style="max-width: 520px; text-align: center;">
-      <p style="color: #f1c40f; margin-bottom: 8px;">
-        Pato Lemus y su corporación TALACORP han tomado el pantano por la fuerza.
-      </p>
-      <p style="font-size: 13px; color: #cbd5e1;">
-        ¡Despierta de la siesta, enfrenta a sus máquinas y escala el Árbol Sagrado hasta la cima!
-      </p>
+    <div class="title-screen-container">
+      <img src="./assets/title-screen.png" class="title-screen-art" alt="El Ascenso de Frogbert - Venganza en el Árbol Sagrado" />
+      <div class="title-screen-nav" role="menu">
+        <button id="btn-start" class="title-menu-btn btn-jugar" role="menuitem" aria-label="Jugar aventura">
+          <span class="btn-cursor-pointer">▶</span>
+        </button>
+        <button id="btn-options" class="title-menu-btn btn-opciones" role="menuitem" aria-label="Opciones del juego">
+          <span class="btn-cursor-pointer">▶</span>
+        </button>
+        <button id="btn-controls" class="title-menu-btn btn-controles" role="menuitem" aria-label="Controles e instrucciones">
+          <span class="btn-cursor-pointer">▶</span>
+        </button>
+        <button id="btn-credits" class="title-menu-btn btn-salir" role="menuitem" aria-label="Salir / Créditos">
+          <span class="btn-cursor-pointer">▶</span>
+        </button>
+      </div>
     </div>
-    <button class="btn-n64" id="btn-start">🎮 ¡INICIAR AVENTURA!</button>
+
+    <!-- Sub-modal de Opciones -->
+    <div class="title-submodal" id="modal-options" style="display: none;">
+      <div class="submodal-box">
+        <h2 class="submodal-title">⚙️ OPCIONES</h2>
+        <div class="submodal-content">
+          <div class="option-row">
+            <span>MÚSICA Y SFX</span>
+            <button class="btn-n64" id="btn-options-audio">🔊 AUDIO: ON</button>
+          </div>
+          <div class="option-row">
+            <span>FILTRO CRT RETRO</span>
+            <button class="btn-n64" id="btn-options-crt">📺 CRT: ON</button>
+          </div>
+        </div>
+        <button class="btn-n64 btn-close-submodal" id="btn-close-options">🔙 VOLVER</button>
+      </div>
+    </div>
+
+    <!-- Sub-modal de Controles -->
+    <div class="title-submodal" id="modal-controls" style="display: none;">
+      <div class="submodal-box" style="max-width: 580px;">
+        <h2 class="submodal-title">📖 GUÍA DE CONTROLES</h2>
+        <div class="controls-guide-grid">
+          <div class="ctrl-card">
+            <span class="ctrl-key">[W][A][S][D] / Flechas</span>
+            <span class="ctrl-desc">Mover a Frogbert</span>
+          </div>
+          <div class="ctrl-card">
+            <span class="ctrl-key">[ESPACIO]</span>
+            <span class="ctrl-desc">Mantener para saltar alto / Avanzar diálogo</span>
+          </div>
+          <div class="ctrl-card">
+            <span class="ctrl-key">[E] o Clic Izquierdo</span>
+            <span class="ctrl-desc">Disparar lengua / Hablar con animales</span>
+          </div>
+          <div class="ctrl-card">
+            <span class="ctrl-key">[ESC]</span>
+            <span class="ctrl-desc">Pausar el juego</span>
+          </div>
+          <div class="ctrl-card">
+            <span class="ctrl-key">Ratón / [Q][R]</span>
+            <span class="ctrl-desc">Girar cámara 360°</span>
+          </div>
+          <div class="ctrl-card">
+            <span class="ctrl-key">Móvil / Táctil</span>
+            <span class="ctrl-desc">D-Pad táctil + botones virtuales</span>
+          </div>
+        </div>
+        <button class="btn-n64 btn-close-submodal" id="btn-close-controls" style="margin-top: 14px;">🔙 VOLVER</button>
+      </div>
+    </div>
+
+    <!-- Sub-modal de Salir / Créditos -->
+    <div class="title-submodal" id="modal-credits" style="display: none;">
+      <div class="submodal-box">
+        <h2 class="submodal-title">🚪 SALIR DEL PANTANO</h2>
+        <p style="color: #cbd5e1; font-size: 13px; line-height: 1.6; margin-bottom: 16px;">
+          ¿Deseas reiniciar la aventura o volver a la tranquilidad del pantano?
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          <button class="btn-n64" id="btn-action-reload" style="background: #e74c3c; border-color: #c0392b; font-size: 12px;">🔄 REINICIAR PÁGINA</button>
+          <button class="btn-n64 btn-close-submodal" id="btn-close-credits" style="font-size: 12px;">🔙 SEGUIR JUGANDO</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Pantalla de Game Over -->

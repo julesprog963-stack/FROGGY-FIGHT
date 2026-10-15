@@ -69,6 +69,46 @@ class AudioManager {
     osc.stop(now + 0.17);
   }
 
+  // SFX: Selección y navegación de menú retro estilo N64
+  playMenuSelect() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(320, now);
+    osc.frequency.exponentialRampToValueAtTime(640, now + 0.12);
+
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain || this.masterGain);
+
+    osc.start(now);
+    osc.stop(now + 0.15);
+  }
+
+  playMenuHover() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(540, now);
+
+    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain || this.masterGain);
+
+    osc.start(now);
+    osc.stop(now + 0.06);
+  }
+
   // SFX: Salto con muelle / boing estilo Conker
   playJump(powerRatio = 0.5) {
     if (!this.ctx || this.isMuted) return;
