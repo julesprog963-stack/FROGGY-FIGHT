@@ -5,6 +5,7 @@ import { TiltingLeaf, SteppingLPlatform, HangingSwingPlatform, TongueAnchor } fr
 import { SwampFly, BarkBeetle, PatrolWasp } from './bugs.js';
 import { NPC } from './npc.js';
 import { Coin } from './coin.js';
+import { dressTrunk, dressPlatforms } from './ps2-art.js';
 import { buildForestAtmosphere } from './forest-art.js';
 
 function createCylinderPlatform(mesh, radius, height) {
@@ -60,7 +61,7 @@ export class TestPortal {
     this.beamMat = new THREE.MeshBasicMaterial({
       color: this.color,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.12,
       side: THREE.DoubleSide,
       depthWrite: false
     });
@@ -71,21 +72,30 @@ export class TestPortal {
     // 3. Vórtices flotantes giratorios
     const vortexGeo = new THREE.TorusGeometry(1.15, 0.08, 8, 24);
     vortexGeo.rotateX(Math.PI / 2);
-    this.vortex1 = new THREE.Mesh(vortexGeo, new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true }));
+    this.vortex1 = new THREE.Mesh(vortexGeo, new THREE.MeshBasicMaterial({ color: 0xa9ffe1, wireframe: false }));
     this.vortex1.position.y = 1.0;
     this.mesh.add(this.vortex1);
 
-    this.vortex2 = new THREE.Mesh(vortexGeo, new THREE.MeshBasicMaterial({ color: this.color, wireframe: true }));
+    this.vortex2 = new THREE.Mesh(vortexGeo, new THREE.MeshBasicMaterial({ color: this.color, wireframe: false }));
     this.vortex2.position.y = 2.2;
     this.mesh.add(this.vortex2);
 
     // 4. Diamante holográfico flotante en la cima del portal
     const crystalGeo = new THREE.OctahedronGeometry(0.48, 0);
-    this.crystalMat = new THREE.MeshBasicMaterial({ color: this.color, wireframe: true });
+    this.crystalMat = new THREE.MeshBasicMaterial({ color: this.color, wireframe: false });
     this.crystal = new THREE.Mesh(crystalGeo, this.crystalMat);
     this.crystal.position.y = 3.6;
     this.mesh.add(this.crystal);
 
+    // Stone uprights frame the original teleport volume.
+    const stone = new THREE.MeshLambertMaterial({color: 0x49665c, flatShading:true});
+    const gold = new THREE.MeshLambertMaterial({color: 0xd5a954, flatShading:true});
+    for (const side of [-1,1]) {
+      const pillar = new THREE.Mesh(new THREE.CylinderGeometry(.24,.38,2.8,5),stone);
+      pillar.position.set(side*1.45,1.45,0); this.mesh.add(pillar);
+      const crown = new THREE.Mesh(new THREE.OctahedronGeometry(.32),gold);
+      crown.position.set(side*1.45,3,0); this.mesh.add(crown);
+    }
     // Luz puntual emisiva
     this.light = new THREE.PointLight(this.color, 2.0, 9);
     this.light.position.set(0, 2.0, 0);
@@ -110,7 +120,7 @@ export class TestPortal {
       this.crystal.position.y = 3.6 + Math.sin(this.timer * 4.0) * 0.2;
     }
     if (this.beamMat) {
-      this.beamMat.opacity = 0.25 + Math.sin(this.timer * 5.0) * 0.15;
+      this.beamMat.opacity = 0.10 + Math.sin(this.timer * 2.0) * 0.035;
     }
 
     if (particles && Math.random() < 0.25) {
@@ -193,7 +203,9 @@ export class Level {
     this.spawnNPCs();
     this.spawnCoins();
     this.buildTestPortals();
-    buildForestAtmosphere(this.scene);
+    dressTrunk(this.trunkMesh);
+    dressPlatforms(this.platforms);
+    this.forestArt = buildForestAtmosphere(this.scene);
   }
 
   buildWorld() {
@@ -920,6 +932,7 @@ export class Level {
   }
 
   update(dt, frog, hud = null, input = null) {
+    this.forestArt?.update(dt);
     this.tiltingLeaves.forEach(leaf => leaf.update(dt));
     this.hangingPlatforms.forEach(p => p.update(dt));
     this.anchors.forEach(a => a.update(dt));

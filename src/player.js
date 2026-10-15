@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Textures } from './textures.js';
+import { paintedTexture } from './ps2-art.js';
 import { audio } from './audio.js';
 
 export class Player {
@@ -70,9 +71,9 @@ export class Player {
 
   createModel() {
     // Paleta Rareware / Conker: verde saturado con pancita amarilla y ojos expresivos
-    const frogMat = new THREE.MeshLambertMaterial({ color: 0x44bd32, flatShading: true });
-    const bellyMat = new THREE.MeshLambertMaterial({ color: 0xfbc531, flatShading: true });
-    const eyeWhiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const frogMat = new THREE.MeshLambertMaterial({ color: 0xb5e65b, map: paintedTexture('skin'), flatShading: true });
+    const bellyMat = new THREE.MeshLambertMaterial({ color: 0xe8ce74, flatShading: true });
+    const eyeWhiteMat = new THREE.MeshLambertMaterial({ color: 0xfff6dc, emissive: 0x242318 });
     const pupilMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
     const eyelidMat = new THREE.MeshLambertMaterial({ color: 0x2e8623, flatShading: true });
     const mouthMat = new THREE.MeshLambertMaterial({ color: 0xc23616, flatShading: true });
@@ -107,7 +108,7 @@ export class Player {
 
     // 2. Ojos saltones gigantes estilo Conker / N64
     const eyeGeo = new THREE.DodecahedronGeometry(0.36, 1);
-    const pupilGeo = new THREE.BoxGeometry(0.12, 0.22, 0.1);
+    const pupilGeo = new THREE.SphereGeometry(0.13, 8, 6);
     const eyelidGeo = new THREE.SphereGeometry(0.38, 6, 4, 0, Math.PI * 2, 0, Math.PI * 0.5);
 
     [-0.38, 0.38].forEach(x => {
@@ -128,6 +129,8 @@ export class Player {
       pupil.position.set(x, 0.58, 0.57);
       this.modelContainer.add(pupil);
       this.pupils.push(pupil);
+      const glint = new THREE.Mesh(new THREE.SphereGeometry(.035,5,4), eyeWhiteMat);
+      glint.position.set(-.035,.045,.105); pupil.add(glint);
     });
 
     // 3. Boca cómica con lengua asomando
@@ -144,7 +147,7 @@ export class Player {
     // 4. Patitas traseras con dedos palmeados
     [-0.56, 0.56].forEach(x => {
       const legGroup = new THREE.Group();
-      const thighGeo = new THREE.BoxGeometry(0.36, 0.52, 0.62);
+      const thighGeo = new THREE.SphereGeometry(0.33, 8, 6);
       const thigh = new THREE.Mesh(thighGeo, frogMat);
       thigh.position.set(0, 0, -0.1);
       thigh.rotation.x = 0.4;
@@ -170,7 +173,7 @@ export class Player {
 
     // 5. Patitas delanteras / brazos
     [-0.46, 0.46].forEach(x => {
-      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.48, 0.2), frogMat);
+      const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 0.48, 6), frogMat);
       arm.position.set(x, -0.2, 0.4);
       arm.rotation.x = -0.2;
       this.modelContainer.add(arm);
@@ -856,7 +859,10 @@ export class Player {
     });
 
     // Parpadeo y reacción de ojos
-    const blink = Math.sin(this.animTime * 0.5) > 0.96;
+    const blinkPhase = (this.animTime / 8) % 4.7;
+    const blink = blinkPhase > 4.5;
+    this.eyes.forEach(eye => { eye.scale.y = blink ? .12 : 1; });
+    this.eyelids.forEach(el => { el.rotation.x = blink ? .25 : -Math.PI / 2.8; });
     this.pupils.forEach(p => {
       p.scale.y = blink ? 0.1 : 1.0;
     });
@@ -869,9 +875,10 @@ export class Player {
         this.legs[0].rotation.x = Math.sin(this.animTime * 1.5) * 0.6;
         this.legs[1].rotation.x = -Math.sin(this.animTime * 1.5) * 0.6;
       } else if (!this.isChargingJump) {
-        const breathe = 1 + Math.sin(this.animTime * 0.8) * 0.05;
+        const breathe = 1 + Math.sin(this.animTime * 0.32) * 0.035;
         this.belly.scale.set(0.92 * breathe, 0.82 / breathe, 0.52 * breathe);
-        this.body.position.y = 0;
+        this.body.position.y = Math.sin(this.animTime * .32) * .025;
+        this.legs.forEach(leg => { leg.rotation.x *= Math.exp(-dt * 9); });
       }
     } else {
       this.legs.forEach((leg, i) => {

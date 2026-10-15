@@ -16,11 +16,9 @@ export class Coin {
     // Malla principal de la moneda dorada (Cilindro plano giratorio)
     const coinGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.12, 16);
     coinGeo.rotateX(Math.PI / 2); // Orientar para que la cara redonda mire al frente
-    const coinMat = new THREE.MeshStandardMaterial({
+    const coinMat = new THREE.MeshLambertMaterial({
       color: 0xf1c40f,
       emissive: 0x7d6608,
-      roughness: 0.25,
-      metalness: 0.85,
       flatShading: true
     });
     const coinBody = new THREE.Mesh(coinGeo, coinMat);
@@ -28,7 +26,7 @@ export class Coin {
 
     // Borde brillante interior
     const rimGeo = new THREE.TorusGeometry(0.42, 0.04, 6, 16);
-    const rimMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const rimMat = new THREE.MeshBasicMaterial({ color: 0xffd97b });
     const rim = new THREE.Mesh(rimGeo, rimMat);
     this.mesh.add(rim);
 

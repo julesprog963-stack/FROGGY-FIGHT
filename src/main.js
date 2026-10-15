@@ -43,8 +43,8 @@ class Game {
   initThree() {
     // 1. Escena y Niebla N64
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x153b35);
-    this.scene.fog = new THREE.FogExp2(0x153b35, 0.014);
+    this.scene.background = new THREE.Color(0x193f3c);
+    this.scene.fog = new THREE.FogExp2(0x193f3c, 0.019);
 
     // 2. Cámara
     const aspect = window.innerWidth / window.innerHeight;
@@ -57,10 +57,10 @@ class Game {
     this.container.appendChild(this.renderer.domElement);
 
     // 4. Iluminación estilo años 90
-    const hemiLight = new THREE.HemisphereLight(0x91cdbb, 0x304323, 1.15);
+    const hemiLight = new THREE.HemisphereLight(0x8cbeb6, 0x24372d, 0.95);
     this.scene.add(hemiLight);
 
-    const sunLight = new THREE.DirectionalLight(0xffd39a, 1.65);
+    const sunLight = new THREE.DirectionalLight(0xffcf87, 2.2);
     sunLight.position.set(-18, 35, 26);
     this.scene.add(sunLight);
 
@@ -77,8 +77,10 @@ class Game {
     this.particles = new ParticleSystem(this.scene);
     this.level = new Level(this.scene);
     this.player = new Player(this.scene, this.particles);
+    this.player.mesh.position.copy(this.player.position);
     this.boss = new BossBugZapper(this.scene, new THREE.Vector3(0, 40.5, 0), this.particles);
     this.tpCamera = new ThirdPersonCamera(this.camera, this.player);
+    this.tpCamera.resetPosition();
 
     window.addEventListener('resize', () => this.onWindowResize());
   }
@@ -394,6 +396,11 @@ class Game {
       return;
     }
 
+    if (this.state === 'start') {
+      this.level.forestArt?.update(dt);
+      this.player.animTime += dt * 8;
+      this.player.updateAnimation(dt, this.input);
+    }
     if (this.state === 'cinematic' && this.cinematic) {
       this.particles.update(dt);
       this.cinematic.update(dt);

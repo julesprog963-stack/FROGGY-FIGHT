@@ -15,7 +15,11 @@ class AudioManager {
   }
 
   init() {
-    if (this.ctx) return;
+    if (this.ctx) {
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+      if (this.musicElement?.paused) this.musicElement.play().catch(() => {});
+      return;
+    }
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     this.ctx = new AudioContext();
 
@@ -381,8 +385,14 @@ class AudioManager {
   startMusic() {
     if (this.musicRunning) return;
     this.musicRunning = true;
-    this.nextNoteTime = this.ctx.currentTime + 0.1;
-    this.scheduler();
+    // User-provided soundtrack, streamed rather than decoded into a large buffer.
+    this.musicElement = new Audio(`${import.meta.env.BASE_URL}audio/frogbert-theme.mp3`);
+    this.musicElement.loop = true;
+    this.musicElement.preload = 'metadata';
+    this.musicSource = this.ctx.createMediaElementSource(this.musicElement);
+    this.musicSource.connect(this.musicGain);
+    this.musicGain.gain.value = 0.8;
+    this.musicElement.play().catch(() => { /* Next user gesture retries playback. */ });
   }
 
   scheduler() {

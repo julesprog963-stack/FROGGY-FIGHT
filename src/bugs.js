@@ -18,21 +18,21 @@ export class SwampFly {
   createModel() {
     // Cuerpo negro rechoncho low-poly
     const bodyGeo = new THREE.DodecahedronGeometry(0.2, 0);
-    const bodyMat = new THREE.MeshLambertMaterial({ color: 0x111111, flatShading: true });
+    const bodyMat = new THREE.MeshLambertMaterial({ color: 0x284b49, flatShading: true });
     this.body = new THREE.Mesh(bodyGeo, bodyMat);
     this.mesh.add(this.body);
 
     // Ojos rojos estilo mosca cartoon N64
     const eyeMat = new THREE.MeshBasicMaterial({ color: 0xe74c3c });
     [-0.1, 0.1].forEach(x => {
-      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.08), eyeMat);
+      const eye = new THREE.Mesh(new THREE.IcosahedronGeometry(0.065, 0), eyeMat);
       eye.position.set(x, 0.1, 0.15);
       this.mesh.add(eye);
     });
 
     // Alas translúcidas que aletean rápido
     this.wings = [];
-    const wingMat = new THREE.MeshBasicMaterial({ color: 0xecf0f1, transparent: true, opacity: 0.75 });
+    const wingMat = new THREE.MeshBasicMaterial({ color: 0xbbe8df, transparent: true, opacity: 0.75, side: THREE.DoubleSide });
     [-0.16, 0.16].forEach(x => {
       const wing = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.2), wingMat);
       wing.position.set(x, 0.15, 0);
@@ -191,7 +191,7 @@ export class PatrolWasp {
   createModel() {
     // Franjas de peligro amarillo/negro en el aguijón
     const bodyMat = new THREE.MeshLambertMaterial({ color: 0xf39c12, flatShading: true });
-    const blackMat = new THREE.MeshLambertMaterial({ color: 0x111111, flatShading: true });
+    const blackMat = new THREE.MeshLambertMaterial({ color: 0x284b49, flatShading: true });
 
     const abdo = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.65, 5), bodyMat);
     abdo.rotation.x = -Math.PI / 2.3;
