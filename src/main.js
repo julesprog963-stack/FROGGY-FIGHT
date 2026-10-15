@@ -215,7 +215,9 @@ class Game {
     if (optAudioBtn) optAudioBtn.onclick = toggleAudioAction;
 
     // Botones de CRT
-    const toggleCrtAction = () => {
+    const toggleCrtAction = (event) => {
+      // Return pointer users to gameplay so Space charges a jump.
+      if (event?.detail > 0) event.currentTarget.blur();
       const willBeOn = crtOverlay.style.display === 'none';
       syncCrtUI(willBeOn);
     };
