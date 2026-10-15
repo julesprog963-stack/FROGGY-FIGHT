@@ -726,6 +726,32 @@ export class Player {
     }
   }
 
+  takeHit(knockbackDir = null) {
+    if (this.invulnerableTimer > 0) return false;
+    this.lives--;
+    audio.playHurt();
+    this.invulnerableTimer = 1.6;
+    this.tongueState = 'idle';
+    if (this.tongueMesh) this.tongueMesh.visible = false;
+
+    if (this.particles) {
+      this.particles.spawnSparks(this.position, 8);
+    }
+    this.squashStretch.set(1.3, 0.7, 1.3);
+
+    if (knockbackDir) {
+      this.velocity.x += knockbackDir.x * 6;
+      this.velocity.z += knockbackDir.z * 6;
+      this.velocity.y = Math.max(this.velocity.y, 4.5);
+    }
+
+    // Solo vuelve al checkpoint cuando se queda sin vidas (muere)
+    if (this.lives <= 0) {
+      this.respawnAtCheckpoint();
+    }
+    return true;
+  }
+
   respawnAtCheckpoint() {
     this.lives--;
     audio.playHurt();

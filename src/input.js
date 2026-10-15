@@ -49,15 +49,19 @@ export class InputManager {
         if (this.onDialogueAdvance) this.onDialogueAdvance();
       }
 
-      if (code === 'KeyE') {
+      if (code === 'KeyE' || code === 'KeyF') {
         this.keys.tonguePressed = true;
       }
 
       if (code === 'KeyQ') this.keys.cLeft = true;
       if (code === 'KeyR') this.keys.cRight = true;
 
-      if (code === 'Enter') {
-        if (this.onDialogueAdvance) this.onDialogueAdvance();
+      if (code === 'Enter' || code === 'NumpadEnter') {
+        if (document.body.classList.contains('in-dialogue')) {
+          if (this.onDialogueAdvance) this.onDialogueAdvance();
+        } else {
+          this.keys.tonguePressed = true;
+        }
       }
 
       if (code === 'Escape') {

@@ -301,10 +301,14 @@ export class PatrolWasp {
       this.mesh.lookAt(frog.position);
 
       if (distToFrog < 1.3 && frog.invulnerableTimer <= 0) {
-        // Pica a la rana y la empuja
-        frog.velocity.add(chargeDir.multiplyScalar(14));
-        frog.respawnAtCheckpoint();
-        this.chargeCooldown = 3.0;
+        // Pica a la rana: pierde vida y tiene i-frames pero se queda en su lugar (solo vuelve al checkpoint si muere)
+        const hitDir = frog.position.clone().sub(this.position).normalize();
+        if (frog.takeHit) {
+          frog.takeHit(hitDir);
+        } else {
+          frog.respawnAtCheckpoint();
+        }
+        this.chargeCooldown = 2.5;
       }
     } else {
       if (this.chargeCooldown > 0) this.chargeCooldown -= dt;

@@ -183,7 +183,9 @@ export class BossShockwave {
         const isGrounded = frog.isGrounded || (frog.position.y < this.center.y + 0.85);
         if (isGrounded && frog.invulnerableTimer <= 0) {
           this.hitPlayer = true;
-          frog.respawnAtCheckpoint();
+          const hitDir = new THREE.Vector3(frog.position.x - this.center.x, 0, frog.position.z - this.center.z).normalize();
+          if (frog.takeHit) frog.takeHit(hitDir);
+          else frog.respawnAtCheckpoint();
         }
       }
     }
@@ -505,7 +507,9 @@ export class BossTalabotTitan {
 
     // Daño por contacto si embiste a Frogbert
     if (this.mesh.position.distanceTo(frog.position) < 2.0 && frog.invulnerableTimer <= 0) {
-      frog.respawnAtCheckpoint();
+      const hitDir = frog.position.clone().sub(this.mesh.position).normalize();
+      if (frog.takeHit) frog.takeHit(hitDir);
+      else frog.respawnAtCheckpoint();
     }
 
     if (this.subTimer > 3.0) {
@@ -596,7 +600,9 @@ export class BossTalabotTitan {
 
       // Si atropella a Frogbert
       if (this.mesh.position.distanceTo(frog.position) < 2.2 && frog.invulnerableTimer <= 0) {
-        frog.respawnAtCheckpoint();
+        const hitDir = frog.position.clone().sub(this.mesh.position).normalize();
+        if (frog.takeHit) frog.takeHit(hitDir);
+        else frog.respawnAtCheckpoint();
       }
 
       // Si llega al borde de la arena: ¡Frena, derrapa y se marea!
