@@ -37,6 +37,11 @@ export class HUD {
         this.interactBtn.blur();
         if (this.activeNearNpc && this.dialogueBox.style.display !== 'flex') {
           this.activeNearNpc.interact(this);
+        } else if (window.__game && window.__game.player && window.__game.level && window.__game.level.antenna) {
+          const g = window.__game;
+          if (!g.level.antenna.isShielded && !g.level.antenna.isDestroyed) {
+            g.player.startKick(g.tpCamera, g.level.miniTalabots, g.level.antenna, g.level.bugs);
+          }
         }
       });
     }
@@ -62,35 +67,51 @@ export class HUD {
     if (this.bugsElem) this.bugsElem.textContent = `${player.bugsEaten % 20} / 20`;
     if (this.coinsElem) this.coinsElem.textContent = `x ${player.coins.toString().padStart(2, '0')}`;
 
-    // Prompt y botón de interacción con NPCs cercanos
+    // Prompt y botón de interacción con NPCs cercanos o Antena Central vulnerable
     const nearNpc = level && level.npcs ? level.npcs.find(n => n.isNear) : null;
     this.activeNearNpc = nearNpc;
+
+    const antenna = level ? level.antenna : null;
+    const nearVulnerableAntenna = antenna && !antenna.isShielded && !antenna.isDestroyed &&
+      player.position.distanceTo(antenna.position) < 3.8;
 
     if (nearNpc && this.dialogueBox.style.display !== 'flex') {
       if (this.interactBtn) this.interactBtn.style.display = 'flex';
       if (this.interactPrompt) {
         this.interactPrompt.textContent = `Hablar con ${nearNpc.name} [E / Clic]`;
       }
+    } else if (nearVulnerableAntenna && this.dialogueBox.style.display !== 'flex') {
+      if (this.interactBtn) this.interactBtn.style.display = 'flex';
+      if (this.interactPrompt) {
+        this.interactPrompt.textContent = `🦿 ¡PATEAR ANTENA CENTRAL! [F / Clic Der. / E] (${antenna.hp}/${antenna.maxHp})`;
+      }
     } else {
       if (this.interactBtn) this.interactBtn.style.display = 'none';
     }
 
-    // 2. Altitud y sector del ascenso
+    // 2. Altitud y sector del ascenso (Árbol Sagrado de 56m)
     if (this.altitudeElem) {
       const height = Math.max(0, Math.round(player.position.y));
-      let zoneName = "Base del Tronco";
-      if (height >= 40) zoneName = "¡CIMA - ZONA DEL EXTERMINADOR!";
-      else if (height > 32) zoneName = "Ascenso Final a la Cima";
-      else if (height > 22) zoneName = "Sector Tuberías TALACORP";
-      else if (height > 10) zoneName = "Hojas y Lianas de la Selva";
+      let zoneName = "Base del Tronco (Mini-Talabots)";
+      if (height >= 55) zoneName = "¡CIMA - ARENA Y ANTENA CENTRAL!";
+      else if (height > 43) zoneName = "Ascenso Final a la Cima";
+      else if (height > 26) zoneName = "Sector Tuberías TALACORP";
+      else if (height > 11) zoneName = "Hojas y Lianas de la Selva";
 
       this.altitudeElem.textContent = `ALT: ${height}m - ${zoneName}`;
     }
 
-    // 3. Barra del Jefe si está activo (transform scaleX para 60fps sin reflows)
-    if (boss && boss.state !== 'dormant' && boss.state !== 'defeated' && (player.position.y >= 40.0 || (boss.hp < boss.maxHp && player.position.y >= 35))) {
+    // 3. Barra del Jefe o de la Antena Central si el Jefe ya cayó
+    const bossTitleElem = this.bossBarContainer ? this.bossBarContainer.querySelector('.boss-title') : null;
+    if (boss && boss.state !== 'dormant' && boss.state !== 'defeated' && (player.position.y >= 54.0 || (boss.hp < boss.maxHp && player.position.y >= 48))) {
       this.bossBarContainer.style.display = 'block';
+      if (bossTitleElem) bossTitleElem.textContent = 'TALABOT TITÁN - SERIE 64';
       const ratio = Math.max(0, boss.hp / boss.maxHp);
+      this.bossBarFill.style.transform = `scaleX(${ratio})`;
+    } else if (boss && boss.state === 'defeated' && antenna && !antenna.isDestroyed && player.position.y >= 50) {
+      this.bossBarContainer.style.display = 'block';
+      if (bossTitleElem) bossTitleElem.textContent = '📡 ANTENA CENTRAL TALACORP (¡PATÉALA CON [F]!)';
+      const ratio = Math.max(0, antenna.hp / antenna.maxHp);
       this.bossBarFill.style.transform = `scaleX(${ratio})`;
     } else {
       this.bossBarContainer.style.display = 'none';

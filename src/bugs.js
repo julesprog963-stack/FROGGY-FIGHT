@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { TRUNK_CONFIG } from './ps2-art.js';
 
 // 1. Mosca de pantano: vuela en patrón de ocho
 export class SwampFly {
@@ -67,10 +68,9 @@ export class SwampFly {
   }
 
   handleTrunkCollision() {
-    if (this.position.y < 40.8) {
-      const t = Math.min(Math.max(this.position.y / 40.0, 0), 1.0);
-      const trunkRadius = 10.5 - t * 2.0;
-      const minDistance = trunkRadius + 0.50; // Margen de seguridad para que la mosca nunca penetre la corteza
+    if (this.position.y < TRUNK_CONFIG.height + 0.8) {
+      const trunkRadius = TRUNK_CONFIG.getRadiusAtY(this.position.y);
+      const minDistance = trunkRadius + 0.55; // Margen de seguridad para que la mosca nunca penetre la corteza
       const distXZ = Math.hypot(this.position.x, this.position.z);
       if (distXZ < minDistance && distXZ > 0.001) {
         const nx = this.position.x / distXZ;
@@ -152,9 +152,8 @@ export class BarkBeetle {
   }
 
   handleTrunkCollision() {
-    if (this.position.y < 40.5) {
-      const t = Math.min(Math.max(this.position.y / 40.0, 0), 1.0);
-      const trunkRadius = 10.5 - t * 2.0;
+    if (this.position.y < TRUNK_CONFIG.height + 0.5) {
+      const trunkRadius = TRUNK_CONFIG.getRadiusAtY(this.position.y);
       const minDistance = trunkRadius + 0.45;
       const distXZ = Math.hypot(this.position.x, this.position.z);
       if (distXZ < minDistance && distXZ > 0.001) {
@@ -242,9 +241,8 @@ export class PatrolWasp {
   hasLineOfSight(targetPos) {
     // Comprueba si el cilindro del tronco se interpone entre la avispa y el objetivo
     const avgY = (this.position.y + targetPos.y) * 0.5;
-    if (avgY >= 40.5) return true; // Por encima de la copa del árbol
-    const t = Math.min(Math.max(avgY / 40.0, 0), 1.0);
-    const trunkRadius = 10.5 - t * 2.0;
+    if (avgY >= TRUNK_CONFIG.height + 0.5) return true; // Por encima de la copa del árbol
+    const trunkRadius = TRUNK_CONFIG.getRadiusAtY(avgY);
 
     const x1 = this.position.x, z1 = this.position.z;
     const x2 = targetPos.x, z2 = targetPos.z;
@@ -264,9 +262,8 @@ export class PatrolWasp {
   }
 
   handleTrunkCollision() {
-    if (this.position.y < 40.8) {
-      const t = Math.min(Math.max(this.position.y / 40.0, 0), 1.0);
-      const trunkRadius = 10.5 - t * 2.0;
+    if (this.position.y < TRUNK_CONFIG.height + 0.8) {
+      const trunkRadius = TRUNK_CONFIG.getRadiusAtY(this.position.y);
       const minDistance = trunkRadius + 0.65; // Margen de seguridad para que la avispa nunca penetre el tronco
       const distXZ = Math.hypot(this.position.x, this.position.z);
       if (distXZ < minDistance && distXZ > 0.001) {

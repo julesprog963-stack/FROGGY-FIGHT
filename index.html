@@ -54,10 +54,16 @@
     <div class="dialogue-hint">▼</div>
   </div>
 
+  <!-- Barras panorámicas de cinemática estilo PS2 -->
+  <div id="cinematic-letterbox" aria-hidden="true">
+    <div class="letterbox-bar top"></div>
+    <div class="letterbox-bar bottom"></div>
+  </div>
+
   <!-- Guía de controles -->
   <div id="controls-hint">
-    [WASD] Moverse &nbsp;|&nbsp; [ESPACIO] Cargar Salto &nbsp;|&nbsp; [E / Enter / Clic] Lengua &nbsp;|&nbsp; [ESC] Pausa<br>
-    [Arrastrar Ratón / Q-R] Girar Cámara &nbsp;|&nbsp; [20 Bichos = +1 Vida]
+    [WASD] Moverse &nbsp;|&nbsp; [ESPACIO] Cargar Salto &nbsp;|&nbsp; [E / Enter / Clic] Lengua &nbsp;|&nbsp; [F / Clic Der.] Patada Trasera<br>
+    [Arrastrar Ratón / Q-R] Girar Cámara &nbsp;|&nbsp; [ESC] Pausa &nbsp;|&nbsp; [20 Bichos = +1 Vida]
   </div>
 
   <div id="jump-charge" role="progressbar" aria-label="Carga del salto" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden>
@@ -79,6 +85,7 @@
         <button type="button" data-touch-action="cRight" aria-label="Girar cámara a la derecha"><span class="touch-arrow right" aria-hidden="true"></span></button>
       </div>
       <div class="touch-action-row">
+        <button type="button" data-touch-action="kick" aria-label="Patada trasera">PATADA</button>
         <button type="button" data-touch-action="tongue">LENGUA</button>
         <button type="button" data-touch-action="jump" aria-label="Mantener para cargar salto, soltar para saltar">SALTO</button>
       </div>
@@ -144,12 +151,12 @@
 
     <!-- Sub-modal de Controles -->
     <div class="title-submodal" id="modal-controls" style="display: none;">
-      <div class="submodal-box" style="max-width: 580px;">
+      <div class="submodal-box" style="max-width: 600px;">
         <h2 class="submodal-title">📖 GUÍA DE CONTROLES</h2>
         <div class="controls-guide-grid">
           <div class="ctrl-card">
             <span class="ctrl-key">[W][A][S][D] / Flechas</span>
-            <span class="ctrl-desc">Mover a Frogbert</span>
+            <span class="ctrl-desc">Mover a Frogbert / Impulsar balanceo</span>
           </div>
           <div class="ctrl-card">
             <span class="ctrl-key">[ESPACIO]</span>
@@ -157,7 +164,11 @@
           </div>
           <div class="ctrl-card">
             <span class="ctrl-key">[E] / [Enter] o Clic Izquierdo</span>
-            <span class="ctrl-desc">Disparar lengua / Hablar con animales</span>
+            <span class="ctrl-desc">Disparar lengua / Balancearse / Hablar</span>
+          </div>
+          <div class="ctrl-card">
+            <span class="ctrl-key">[F] / [K] / [Shift] o Clic Derecho</span>
+            <span class="ctrl-desc">Patada Trasera (Mini-Talabots y Antena)</span>
           </div>
           <div class="ctrl-card">
             <span class="ctrl-key">[ESC]</span>
@@ -166,10 +177,6 @@
           <div class="ctrl-card">
             <span class="ctrl-key">Ratón / [Q][R]</span>
             <span class="ctrl-desc">Girar cámara 360°</span>
-          </div>
-          <div class="ctrl-card">
-            <span class="ctrl-key">Móvil / Táctil</span>
-            <span class="ctrl-desc">D-Pad táctil + botones virtuales</span>
           </div>
         </div>
         <button class="btn-n64 btn-close-submodal" id="btn-close-controls" style="margin-top: 14px;">🔙 VOLVER</button>
@@ -202,10 +209,10 @@
 
   <!-- Pantalla de Victoria -->
   <div class="modal-screen" id="victory-screen" style="display: none;">
-    <h1 class="n64-logo" style="color: #2ecc71;">¡VICTORIA!<br><span style="font-size: 16px; color: #f1c40f;">EL EXTERMINADOR HA CAÍDO</span></h1>
+    <h1 class="n64-logo" style="color: #2ecc71;">¡VICTORIA!<br><span style="font-size: 16px; color: #f1c40f;">EL ÁRBOL SAGRADO HA SIDO LIBERADO</span></h1>
     <div class="story-card">
-      ¡El robot Bug-Zapper 3000 ha estallado en mil pedazos!<br><br>
-      Desde la cima del tronco talado contemplas el horizonte. A lo lejos, entre la niebla del bosque, una silueta alada remonta el vuelo...<br><br>
+      ¡Derrotaste al <b>TALABOT TITÁN</b> y destrozaste la <b>ANTENA CENTRAL DE TALACORP</b> con tus patadas traseras!<br><br>
+      Sin la señal remota del Gobernador Pato Lemus, todos los Mini-Talabots en la base del árbol se han apagado para siempre y los animales del bosque celebran su libertad.<br><br>
       <i>Próximamente: Nivel 2 - El Halcón contra las Sierras Mecánicas.</i>
     </div>
     <button class="btn-n64" id="btn-victory-restart">JUGAR DE NUEVO</button>

@@ -8,7 +8,7 @@ import { ThirdPersonCamera } from './camera.js';
 import { ParticleSystem } from './particles.js';
 import { HUD } from './hud.js';
 import { CinematicIntro } from './cinematic.js';
-import { SummitCutscene } from './summit-cutscene.js';
+import { SummitCutscene, AntennaLiberationCutscene } from './summit-cutscene.js';
 
 class Game {
   constructor() {
@@ -28,10 +28,12 @@ class Game {
     this.particles = null;
     this.cinematic = null;
     this.summitCutscene = null;
+    this.liberationCutscene = null;
 
     this.clock = new THREE.Clock();
     this.dialogueTriggeredMid = false;
     this.dialogueTriggeredBoss = false;
+    this.antennaUnlocked = false;
 
     window.__game = this;
 
@@ -41,44 +43,44 @@ class Game {
   }
 
   initThree() {
-    // 1. Escena y Niebla N64
+    // 1. Escena y Niebla PS2 / N64
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x193f3c);
-    this.scene.fog = new THREE.FogExp2(0x193f3c, 0.019);
+    this.scene.fog = new THREE.FogExp2(0x193f3c, 0.015);
 
     // 2. Cámara
     const aspect = window.innerWidth / window.innerHeight;
-    this.camera = new THREE.PerspectiveCamera(65, aspect, 0.2, 350);
+    this.camera = new THREE.PerspectiveCamera(65, aspect, 0.2, 380);
 
-    // 3. Renderer con estética retro
+    // 3. Renderer con estética retro PS2
     this.renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     this.container.appendChild(this.renderer.domElement);
 
-    // 4. Iluminación estilo años 90
-    const hemiLight = new THREE.HemisphereLight(0x8cbeb6, 0x24372d, 0.95);
+    // 4. Iluminación atmosférica PS2
+    const hemiLight = new THREE.HemisphereLight(0x8cbeb6, 0x24372d, 0.98);
     this.scene.add(hemiLight);
 
-    const sunLight = new THREE.DirectionalLight(0xffcf87, 2.2);
-    sunLight.position.set(-18, 35, 26);
+    const sunLight = new THREE.DirectionalLight(0xffcf87, 2.25);
+    sunLight.position.set(-22, 62, 32);
     this.scene.add(sunLight);
 
-    const rimLight = new THREE.DirectionalLight(0x70c8b7, 0.65);
-    rimLight.position.set(20, 24, -30);
+    const rimLight = new THREE.DirectionalLight(0x70c8b7, 0.68);
+    rimLight.position.set(24, 34, -36);
     this.scene.add(rimLight);
 
     // Luz industrial verde secundaria para la zona media
-    const toxicLight = new THREE.PointLight(0x00ff88, 1.3, 35);
-    toxicLight.position.set(10, 22, 0);
+    const toxicLight = new THREE.PointLight(0x00ff88, 1.4, 42);
+    toxicLight.position.set(14, 30, 0);
     this.scene.add(toxicLight);
 
     // 5. Partículas y Entidades
     this.particles = new ParticleSystem(this.scene);
-    this.level = new Level(this.scene);
+    this.level = new Level(this.scene, this.particles);
     this.player = new Player(this.scene, this.particles);
     this.player.mesh.position.copy(this.player.position);
-    this.boss = new BossBugZapper(this.scene, new THREE.Vector3(0, 40.5, 0), this.particles);
+    this.boss = new BossBugZapper(this.scene, new THREE.Vector3(0, 56.9, 0), this.particles);
     this.tpCamera = new ThirdPersonCamera(this.camera, this.player);
     this.tpCamera.resetPosition();
 
@@ -104,7 +106,6 @@ class Game {
     const optCrtBtn = document.getElementById('btn-options-crt');
     const crtOverlay = document.getElementById('crt-screen');
 
-    // Sincronización de Audio en todos los botones
     const syncAudioUI = (isMuted) => {
       const label = isMuted ? '🔇 AUDIO: OFF' : '🔊 AUDIO: ON';
       if (audioBtn) audioBtn.textContent = label;
@@ -112,7 +113,6 @@ class Game {
       if (optAudioBtn) optAudioBtn.textContent = label;
     };
 
-    // Sincronización de CRT en todos los botones
     const syncCrtUI = (isOn) => {
       crtOverlay.style.display = isOn ? 'block' : 'none';
       const label = isOn ? '📺 CRT: ON' : '📺 CRT: OFF';
@@ -120,7 +120,6 @@ class Game {
       if (optCrtBtn) optCrtBtn.textContent = label;
     };
 
-    // Sonidos hover en botones de la pantalla de inicio
     [startBtn, optionsBtn, controlsBtn, creditsBtn].forEach((btn) => {
       if (btn) {
         btn.addEventListener('mouseenter', () => audio.playMenuHover());
@@ -181,7 +180,6 @@ class Game {
       };
     }
 
-    // Cerrar submodales
     const closeSubmodals = () => {
       audio.playMenuSelect();
       if (modalOptions) modalOptions.style.display = 'none';
@@ -205,7 +203,6 @@ class Game {
       };
     }
 
-    // Botones de audio
     const toggleAudioAction = () => {
       const isMuted = audio.toggleMute();
       syncAudioUI(isMuted);
@@ -214,9 +211,7 @@ class Game {
     if (pauseAudioBtn) pauseAudioBtn.onclick = toggleAudioAction;
     if (optAudioBtn) optAudioBtn.onclick = toggleAudioAction;
 
-    // Botones de CRT
     const toggleCrtAction = (event) => {
-      // Return pointer users to gameplay so Space charges a jump.
       if (event?.detail > 0) event.currentTarget.blur();
       const willBeOn = crtOverlay.style.display === 'none';
       syncCrtUI(willBeOn);
@@ -239,9 +234,7 @@ class Game {
       }
     };
 
-    // Pausa (tecla ESC o botones en pantalla)
     this.input.onPauseToggle = () => {
-      // Si estamos en la pantalla de inicio con algún submodal abierto, cerrarlo con ESC
       if (modalOptions && modalOptions.style.display === 'flex') {
         closeSubmodals();
         return;
@@ -254,7 +247,7 @@ class Game {
         closeSubmodals();
         return;
       }
-      if (this.state === 'playing' || this.isPaused) {
+      if (this.state === 'playing' || this.state === 'paused') {
         this.togglePause();
       }
     };
@@ -315,7 +308,7 @@ class Game {
       if (pauseModal) pauseModal.style.display = 'none';
       const pauseBtn = document.getElementById('btn-pause');
       if (pauseBtn) pauseBtn.textContent = '⏸️ PAUSA [ESC]';
-      this.clock.getDelta(); // Limpiar acumulador para evitar saltos temporales
+      this.clock.getDelta();
       audio.playPause(false);
     }
   }
@@ -323,21 +316,21 @@ class Game {
   warpPlayer() {
     if (!this.player) return;
     const warpBtn = document.getElementById('btn-warp');
-    const toSummit = this.player.position.y < 30;
+    const toSummit = this.player.position.y < 42;
 
     if (toSummit) {
-      // Teletransportar directamente a la cima frente a la arena del jefe
-      this.player.position.set(0, 41.2, 5.0);
+      // Teletransportar directamente a la cima de 56.9m frente a la arena del jefe
+      this.player.position.set(0, 57.2, 7.5);
       this.player.prevPosition.copy(this.player.position);
       this.player.velocity.set(0, 0, 0);
-      this.player.lastCheckpoint.set(0, 41.2, 5.0);
+      this.player.lastCheckpoint.set(0, 57.2, 7.5);
       if (warpBtn) warpBtn.textContent = '🌀 PORTAL: BASE';
     } else {
-      // Teletransportar de vuelta a la base del pantano
-      this.player.position.set(0, 1.8, 11.0);
+      // Teletransportar de vuelta a la base del pantano (radio 15m -> z=16.5)
+      this.player.position.set(0, 1.8, 16.5);
       this.player.prevPosition.copy(this.player.position);
       this.player.velocity.set(0, 0, 0);
-      this.player.lastCheckpoint.set(0, 1.6, 11.0);
+      this.player.lastCheckpoint.set(0, 1.6, 16.5);
       if (warpBtn) warpBtn.textContent = '🌀 PORTAL: CIMA';
     }
 
@@ -364,23 +357,78 @@ class Game {
     this.player.lives = 3;
     this.player.bugsEaten = 0;
     this.player.coins = 0;
-    this.player.position.set(0, 1.6, 10);
+    this.player.position.set(0, 1.6, 16.5);
+    this.player.prevPosition.copy(this.player.position);
     this.player.velocity.set(0, 0, 0);
-    this.player.lastCheckpoint.set(0, 1.6, 10);
+    this.player.lastCheckpoint.set(0, 1.6, 16.5);
     this.player.setSleepingPose(false);
     this.player.setAngryPose(true);
     this.tpCamera.resetPosition();
+
     this.boss.hp = 3;
     this.boss.phase = 1;
     this.boss.state = 'idle';
     this.boss.mesh.visible = true;
     this.boss.mesh.scale.set(1, 1, 1);
     this.boss.mesh.position.copy(this.boss.arenaCenter);
+    this.boss.mines.forEach((m) => {
+      m.active = true;
+      m.mesh.visible = true;
+    });
+
+    if (this.level && this.level.antenna) {
+      const ant = this.level.antenna;
+      ant.hp = ant.maxHp;
+      ant.isShielded = true;
+      ant.isDestroyed = false;
+      ant.collapseProgress = 0;
+      if (ant.shieldMesh) ant.shieldMesh.visible = true;
+      if (ant.upperMastGroup) {
+        ant.upperMastGroup.rotation.set(0, 0, 0);
+        ant.upperMastGroup.position.set(0, 1.4, 0);
+      }
+      if (ant.beaconMat) ant.beaconMat.color.setHex(0xff2222);
+      if (ant.beaconLight) {
+        ant.beaconLight.color.setHex(0xff2222);
+        ant.beaconLight.intensity = 2.2;
+      }
+    }
+
+    if (this.level && this.level.miniTalabots) {
+      this.level.miniTalabots.forEach((bot) => {
+        bot.permanentlyShutDown = false;
+        bot.isDead = false;
+        bot.hp = bot.maxHp;
+        bot.mesh.rotation.set(0, 0, 0);
+        bot.position.copy(bot.homePos);
+        bot.mesh.position.copy(bot.position);
+        bot.updateHpPips();
+      });
+    }
+
+    if (this.level && this.level.npcs) {
+      this.level.npcs.forEach((npc) => {
+        npc.celebrating = false;
+      });
+    }
+
     this.dialogueTriggeredMid = false;
     this.dialogueTriggeredBoss = false;
+    this.antennaUnlocked = false;
+
+    const controlsHint = document.getElementById('controls-hint');
+    if (controlsHint) {
+      controlsHint.innerHTML = '[WASD] Moverse &nbsp;|&nbsp; [ESPACIO] Cargar Salto &nbsp;|&nbsp; [E / Enter / Clic] Lengua &nbsp;|&nbsp; [F / Clic Der.] Patada Trasera<br>[Arrastrar Ratón / Q-R] Girar Cámara &nbsp;|&nbsp; [ESC] Pausa &nbsp;|&nbsp; [20 Bichos = +1 Vida]';
+      controlsHint.style.borderColor = '';
+    }
+
     if (this.summitCutscene) {
       this.summitCutscene.finish();
       this.summitCutscene = null;
+    }
+    if (this.liberationCutscene) {
+      this.liberationCutscene.finish();
+      this.liberationCutscene = null;
     }
     this.state = 'playing';
   }
@@ -403,6 +451,7 @@ class Game {
       this.player.animTime += dt * 8;
       this.player.updateAnimation(dt, this.input);
     }
+
     if (this.state === 'cinematic' && this.cinematic) {
       this.particles.update(dt);
       this.cinematic.update(dt);
@@ -410,12 +459,25 @@ class Game {
         this.cinematic.skip();
       }
     } else if (this.state === 'playing') {
-      // Cinemática en la cima del árbol (Pato Lemus y el Helicóptero)
+      // 1. Cinemática de llegada a la cima (Gobernador Pato Lemus y Helicóptero)
       if (this.summitCutscene && this.summitCutscene.isActive) {
         this.particles.update(dt);
         this.summitCutscene.update(dt);
         if (this.input.keys.jumpPressed && this.hud.dialogueBox.style.display !== 'flex') {
           this.summitCutscene.skip();
+        }
+        this.renderer.render(this.scene, this.camera);
+        this.input.resetOneShots();
+        return;
+      }
+
+      // 2. Cinemática final de liberación al destruir la Antena Central
+      if (this.liberationCutscene && this.liberationCutscene.isActive) {
+        this.particles.update(dt);
+        this.level.update(dt, this.player, this.hud, this.input);
+        this.liberationCutscene.update(dt);
+        if (this.input.keys.jumpPressed && this.hud.dialogueBox.style.display !== 'flex') {
+          this.liberationCutscene.skip();
         }
         this.renderer.render(this.scene, this.camera);
         this.input.resetOneShots();
@@ -430,9 +492,19 @@ class Game {
 
       this.input.cameraYaw = this.tpCamera.yaw;
 
-      // Actualizar entidades con cámara y partículas
+      // Actualizar entidades con cámara, partículas, Mini-Talabots y Antena Central
       this.particles.update(dt);
-      this.player.update(dt, this.input, this.level.platforms, this.level.anchors, this.level.bugs, this.boss, this.tpCamera);
+      this.player.update(
+        dt,
+        this.input,
+        this.level.platforms,
+        this.level.anchors,
+        this.level.bugs,
+        this.boss,
+        this.tpCamera,
+        this.level.miniTalabots,
+        this.level.antenna
+      );
       this.level.update(dt, this.player, this.hud, this.input);
       this.tpCamera.update(dt);
 
@@ -440,19 +512,19 @@ class Game {
 
       const warpBtn = document.getElementById('btn-warp');
       if (warpBtn) {
-        const toSummit = height < 30;
+        const toSummit = height < 42;
         const targetLabel = toSummit ? '🌀 PORTAL: CIMA' : '🌀 PORTAL: BASE';
         if (warpBtn.textContent !== targetLabel) {
           warpBtn.textContent = targetLabel;
         }
       }
 
-      const isBossActive = this.dialogueTriggeredBoss || height >= 40.2;
-      if (isBossActive && height >= 32) {
+      const isBossActive = this.dialogueTriggeredBoss || height >= 56.0;
+      if (isBossActive && height >= 46) {
         audio.setTrack('boss');
         this.boss.update(dt, this.player, this.tpCamera, this.input);
 
-        if (!this.dialogueTriggeredBoss && height >= 40.2) {
+        if (!this.dialogueTriggeredBoss && height >= 56.0) {
           this.dialogueTriggeredBoss = true;
           this.summitCutscene = new SummitCutscene(
             this.scene,
@@ -467,7 +539,7 @@ class Game {
           );
         }
 
-        // Guía dinámica durante el agarre estilo Mario vs Bowser
+        // Guía dinámica durante el combate contra Talabot Titán y la Antena Central
         const controlsHint = document.getElementById('controls-hint');
         if (controlsHint) {
           if (this.boss.state === 'grabbed') {
@@ -476,20 +548,47 @@ class Game {
           } else if (this.boss.state === 'dizzy') {
             controlsHint.innerHTML = '⚡ <b>¡TALABOT ATURDIDO!</b> Acércate por la espalda o dispara tu lengua <b>[E / Clic]</b> a su cola para agarrarlo';
             controlsHint.style.borderColor = '#2ecc71';
+          } else if (this.boss.state === 'defeated' && this.level.antenna && !this.level.antenna.isDestroyed) {
+            controlsHint.innerHTML = '📡 <b>¡ESCUDOS ABAJO!</b> Corre hacia la <b>ANTENA CENTRAL</b> en el borde norte y destrúyela con 3 patadas traseras <b>[F / Clic Der. / E]</b>';
+            controlsHint.style.borderColor = '#00e5ff';
           }
         }
 
         if (this.boss.state === 'defeated') {
-          this.state = 'victory';
-          this.hud.showVictory(() => this.restartGame());
+          if (!this.antennaUnlocked) {
+            this.antennaUnlocked = true;
+            if (this.level.antenna) {
+              this.level.antenna.unlockShield();
+            }
+            this.hud.showDialogue(
+              'FROGBERT',
+              '¡El TALABOT TITÁN explotó y el escudo de la ANTENA CENTRAL cayó! ¡Ahora puedo destruir la antena en el borde norte a patadas traseras [F / Clic Derecho] para apagar a todos los Mini-Talabots de abajo!'
+            );
+          }
+
+          if (this.level.antenna && this.level.antenna.isDestroyed && !this.liberationCutscene) {
+            this.liberationCutscene = new AntennaLiberationCutscene(
+              this.scene,
+              this.camera,
+              this.player,
+              this.level,
+              this.hud,
+              this.particles,
+              () => {
+                this.liberationCutscene = null;
+                this.state = 'victory';
+                this.hud.showVictory(() => this.restartGame());
+              }
+            );
+          }
         }
-      } else if (height > 18) {
+      } else if (height > 26) {
         audio.setTrack('industrial');
         if (!this.dialogueTriggeredMid) {
           this.dialogueTriggeredMid = true;
           this.hud.showDialogue(
             'FROGBERT',
-            '¡Uff, tuberías de veneno! Debo tener cuidado con las hojas que tiemblan... ¡y comer moscas para ganar vidas!'
+            '¡Uff, el tronco es gigantesco y está lleno de tuberías de TALACORP! ¡Usaré el impulso de mi lengua para balancearme alto y comer moscas para ganar vidas!'
           );
         }
       } else {

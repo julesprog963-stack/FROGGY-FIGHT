@@ -204,50 +204,81 @@ export const Textures = {
     return tex;
   },
 
-  // Cartel gigante publicitario estilo municipal / político de Pato Lemus
+  // Cartel gigante publicitario estilo estatal / político de Pato Lemus (Gobernador)
   createBillboardTexture() {
     const canvas = document.createElement('canvas');
     canvas.width = 512;
     canvas.height = 256;
     const ctx = canvas.getContext('2d');
 
-    // Fondo tablero de construcción
-    ctx.fillStyle = '#f5f6fa';
+    // Fondo blanco/naranja de obra estatal
+    ctx.fillStyle = '#fff7ed';
     ctx.fillRect(0, 0, 512, 256);
 
-    // Marco exterior de obra
+    // Marco exterior naranja vibrante
     ctx.lineWidth = 12;
-    ctx.strokeStyle = '#e67e22';
+    ctx.strokeStyle = '#ff6b00';
     ctx.strokeRect(6, 6, 500, 244);
 
-    // Encabezado corporativo TALACORP
-    ctx.fillStyle = '#d35400';
+    // Encabezado corporativo TALACORP & GOBIERNO
+    ctx.fillStyle = '#ea580c';
     ctx.fillRect(12, 12, 488, 44);
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 22px monospace, sans-serif';
+    ctx.font = 'bold 21px monospace, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('★ TALACORP INVERSIONES & DESARROLLO ★', 256, 42);
+    ctx.fillText('★ GOBIERNO DEL PANTANO & TALACORP ★', 256, 41);
 
-    // Anuncio principal
-    ctx.fillStyle = '#c0392b';
-    ctx.font = 'bold 32px monospace, sans-serif';
-    ctx.fillText('PRÓXIMAMENTE AQUÍ:', 256, 92);
+    // Retrato 2D de Pato Lemus a la izquierda del cartel
+    // Camisa blanca y chaleco naranja
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(30, 145, 92, 55);
+    ctx.fillStyle = '#ff6b00';
+    ctx.fillRect(42, 145, 68, 55);
+    // Cabeza de pato blanca
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(76, 112, 32, 0, Math.PI * 2);
+    ctx.fill();
+    // Cabello pelirrojo/cobrizo peinado de lado
+    ctx.fillStyle = '#d35400';
+    ctx.beginPath();
+    ctx.arc(74, 96, 31, Math.PI, Math.PI * 2.1);
+    ctx.fill();
+    ctx.fillStyle = '#e67e22';
+    ctx.fillRect(52, 74, 52, 16);
+    // Pico sonriente naranja
+    ctx.fillStyle = '#f59e0b';
+    ctx.beginPath();
+    ctx.moveTo(92, 108);
+    ctx.lineTo(132, 116);
+    ctx.lineTo(92, 128);
+    ctx.closePath();
+    ctx.fill();
+    // Ojo azul expresivo
+    ctx.fillStyle = '#1d4ed8';
+    ctx.beginPath();
+    ctx.arc(86, 104, 5, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Nombre del Centro Comercial y Presidente Pato Lemus
-    ctx.fillStyle = '#2c3e50';
-    ctx.font = '900 36px monospace, sans-serif';
-    ctx.fillText('MEGAMALL & PLAZA', 256, 136);
+    // Textos principales a la derecha
+    ctx.fillStyle = '#c2410c';
+    ctx.font = 'bold 24px monospace, sans-serif';
+    ctx.fillText('OBRA INSIGNIA EN CONSTRUCCIÓN:', 305, 88);
 
-    ctx.fillStyle = '#27ae60';
-    ctx.font = '900 34px monospace, sans-serif';
-    ctx.fillText('“PRESIDENTE PATO LEMUS”', 256, 178);
+    ctx.fillStyle = '#1e293b';
+    ctx.font = '900 32px monospace, sans-serif';
+    ctx.fillText('GRAN MEGAMALL', 305, 130);
 
-    // Lema de campaña
-    ctx.fillStyle = '#e74c3c';
+    ctx.fillStyle = '#ff6b00';
+    ctx.font = '900 30px monospace, sans-serif';
+    ctx.fillText('“GOBERNADOR PATO LEMUS”', 305, 172);
+
+    // Lema de campaña naranja
+    ctx.fillStyle = '#ff6b00';
     ctx.fillRect(12, 196, 488, 46);
-    ctx.fillStyle = '#f1c40f';
-    ctx.font = 'bold 20px monospace, sans-serif';
-    ctx.fillText('“¡EL PROGRESO NO SE DETIENE!” (100% PAVIMENTADO)', 256, 226);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 19px monospace, sans-serif';
+    ctx.fillText('“¡AL ESTILO TALACORP: 100% CEMENTO Y CERO ÁRBOLES!”', 256, 225);
 
     const tex = new THREE.CanvasTexture(canvas);
     tex.magFilter = THREE.NearestFilter;
@@ -301,80 +332,101 @@ export const Textures = {
     return tex;
   },
 
-  // Afiche electoral de campaña de Pato Lemus
+  // Afiche electoral de campaña del Gobernador Pato Lemus (Chaleco naranja y tupé pelirrojo)
   createCampaignPoster1() {
     const canvas = document.createElement('canvas');
     canvas.width = 256;
     canvas.height = 384;
     const ctx = canvas.getContext('2d');
 
-    // Fondo azul político
-    ctx.fillStyle = '#0984e3';
+    // Fondo naranja vibrante de campaña
+    ctx.fillStyle = '#ff6b00';
     ctx.fillRect(0, 0, 256, 384);
 
-    // Marco blanco y rojo
+    // Marco blanco y azul Jalisco
     ctx.lineWidth = 10;
-    ctx.strokeStyle = '#d63031';
+    ctx.strokeStyle = '#ffffff';
     ctx.strokeRect(5, 5, 246, 374);
 
     // Encabezado
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 22px monospace, sans-serif';
+    ctx.font = 'bold 20px monospace, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('★ VOTA LISTA 4 ★', 128, 42);
+    ctx.fillText('★ GOBERNADOR DEL PANTANO ★', 128, 40);
 
-    // Silueta caricaturesca de pato con corbata roja
-    ctx.fillStyle = '#f1c40f'; // Cabeza amarilla
+    // Fondo circular azul detrás del retrato
+    ctx.fillStyle = '#0284c7';
     ctx.beginPath();
-    ctx.arc(128, 115, 45, 0, Math.PI * 2);
+    ctx.arc(128, 125, 62, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = '#e67e22'; // Pico naranja
+    // Camisa blanca con mangas arremangadas y chaleco naranja acolchado
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(74, 155, 108, 62);
+    ctx.fillStyle = '#ea580c';
+    ctx.fillRect(90, 155, 76, 62);
+    // Escudo dorado en el chaleco
+    ctx.fillStyle = '#facc15';
+    ctx.fillRect(140, 168, 14, 16);
+
+    // Cabeza de pato blanca
+    ctx.fillStyle = '#ffffff';
     ctx.beginPath();
-    ctx.moveTo(150, 115);
-    ctx.lineTo(200, 125);
-    ctx.lineTo(150, 138);
+    ctx.arc(128, 116, 40, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Tupé pelirrojo/cobrizo peinado de lado
+    ctx.fillStyle = '#d35400';
+    ctx.beginPath();
+    ctx.arc(125, 96, 38, Math.PI * 0.95, Math.PI * 2.08);
+    ctx.fill();
+    ctx.fillStyle = '#e67e22';
+    ctx.beginPath();
+    ctx.moveTo(95, 82);
+    ctx.lineTo(165, 68);
+    ctx.lineTo(158, 98);
     ctx.closePath();
     ctx.fill();
 
-    ctx.fillStyle = '#000000'; // Ojo astuto
+    // Pico naranja sonriente
+    ctx.fillStyle = '#f59e0b';
     ctx.beginPath();
-    ctx.arc(142, 105, 7, 0, Math.PI * 2);
+    ctx.moveTo(148, 112);
+    ctx.lineTo(202, 122);
+    ctx.lineTo(148, 136);
+    ctx.closePath();
+    ctx.fill();
+
+    // Ojo azul confiado y ceja pelirroja
+    ctx.fillStyle = '#1d4ed8';
+    ctx.beginPath();
+    ctx.arc(142, 106, 7, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
-    ctx.arc(144, 103, 2.5, 0, Math.PI * 2);
+    ctx.arc(144, 104, 2.5, 0, Math.PI * 2);
     ctx.fill();
-
-    // Traje y corbata
-    ctx.fillStyle = '#2d3436';
-    ctx.fillRect(88, 160, 80, 50);
-    ctx.fillStyle = '#d63031'; // Corbata roja
-    ctx.beginPath();
-    ctx.moveTo(128, 160);
-    ctx.lineTo(135, 205);
-    ctx.lineTo(128, 215);
-    ctx.lineTo(121, 205);
-    ctx.closePath();
-    ctx.fill();
+    ctx.fillStyle = '#b84200';
+    ctx.fillRect(132, 93, 20, 5);
 
     // Nombre en letras gigantes
-    ctx.fillStyle = '#fdcb6e';
-    ctx.font = '900 28px monospace, sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 30px monospace, sans-serif';
     ctx.fillText('PATO LEMUS', 128, 250);
 
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 18px monospace, sans-serif';
-    ctx.fillText('2026 - 2030', 128, 280);
+    ctx.fillStyle = '#fef08a';
+    ctx.font = 'bold 17px monospace, sans-serif';
+    ctx.fillText('GOBERNADOR 2024 - 2030', 128, 278);
 
     // Eslogan satírico
-    ctx.fillStyle = '#ffeaa7';
-    ctx.fillRect(15, 300, 226, 60);
-    ctx.fillStyle = '#d63031';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(15, 300, 226, 62);
+    ctx.fillStyle = '#ea580c';
     ctx.font = 'bold 14px monospace, sans-serif';
-    ctx.fillText('“EL CANDIDATO QUE CUAC-MPLE”', 128, 325);
+    ctx.fillText('“¡AL ESTILO PANTANO!”', 128, 324);
+    ctx.fillStyle = '#1e293b';
     ctx.font = 'bold 12px monospace, sans-serif';
-    ctx.fillText('¡MÁS ASFALTO, MENOS RANA!', 128, 345);
+    ctx.fillText('¡PURO CHALECO NARANJA Y MOTOSIERRA!', 128, 346);
 
     const tex = new THREE.CanvasTexture(canvas);
     tex.magFilter = THREE.NearestFilter;

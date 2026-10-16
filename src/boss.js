@@ -209,7 +209,7 @@ export class BossShockwave {
 
 // JEFE TALABOT TITÁN - PELEA ESTILO SUPER MARIO 64 (MARIO VS BOWSER)
 export class BossTalabotTitan {
-  constructor(scene, arenaCenter = new THREE.Vector3(0, 38.8, 0), particles = null) {
+  constructor(scene, arenaCenter = new THREE.Vector3(0, 56.9, 0), particles = null) {
     this.scene = scene;
     this.particles = particles;
     this.arenaCenter = arenaCenter.clone();
@@ -217,8 +217,8 @@ export class BossTalabotTitan {
     this.mesh = new THREE.Group();
     this.mesh.position.copy(this.position);
 
-    // Radio de la plataforma superior de la arena
-    this.arenaRadius = 8.5;
+    // Radio de la plataforma superior de la arena (escalada al Gran Tronco de 12m de radio)
+    this.arenaRadius = 11.8;
 
     // Ondas de choque activas
     this.shockwaves = [];
@@ -266,7 +266,7 @@ export class BossTalabotTitan {
   }
 
   buildMines() {
-    const mineRadius = 10.6;
+    const mineRadius = 13.8;
     for (let i = 0; i < 6; i++) {
       const angle = (i / 6) * Math.PI * 2;
       const pos = new THREE.Vector3(
@@ -497,12 +497,14 @@ export class BossTalabotTitan {
 
     // Limitar dentro de la arena o caer si excede perímetro
     const distCenter = Math.hypot(this.mesh.position.x - this.arenaCenter.x, this.mesh.position.z - this.arenaCenter.z);
-    if (distCenter > 8.8) {
+    const fallLimit = this.arenaRadius + 0.3;
+    const walkLimit = this.arenaRadius - 1.1;
+    if (distCenter > fallLimit) {
       this.startFalling();
       return;
-    } else if (distCenter > 7.5) {
-      this.mesh.position.x = this.arenaCenter.x + (this.mesh.position.x - this.arenaCenter.x) * (7.5 / distCenter);
-      this.mesh.position.z = this.arenaCenter.z + (this.mesh.position.z - this.arenaCenter.z) * (7.5 / distCenter);
+    } else if (distCenter > walkLimit) {
+      this.mesh.position.x = this.arenaCenter.x + (this.mesh.position.x - this.arenaCenter.x) * (walkLimit / distCenter);
+      this.mesh.position.z = this.arenaCenter.z + (this.mesh.position.z - this.arenaCenter.z) * (walkLimit / distCenter);
     }
 
     // Daño por contacto si embiste a Frogbert
@@ -591,9 +593,9 @@ export class BossTalabotTitan {
       if (this.particles && Math.random() < 0.4) {
         this.particles.spawnDustPuff(this.mesh.position.clone().add(new THREE.Vector3(0, 2.5, -1)), 3, 0x111111);
       }
-    } else if (this.subTimer < 3.2) {
+    } else if (this.subTimer < 3.6) {
       // ¡Carrera de choque a gran velocidad!
-      const chargeSpeed = 9.5 + (this.phase - 1) * 2.5;
+      const chargeSpeed = 10.5 + (this.phase - 1) * 2.5;
       this.mesh.translateZ(chargeSpeed * dt);
 
       if (camera) camera.addTrauma(0.04);
@@ -607,12 +609,15 @@ export class BossTalabotTitan {
 
       // Si llega al borde de la arena: ¡Frena, derrapa y se marea!
       const distCenter = Math.hypot(this.mesh.position.x - this.arenaCenter.x, this.mesh.position.z - this.arenaCenter.z);
-      if (distCenter > 8.8) {
+      const fallLimit = this.arenaRadius + 0.3;
+      const skidLimit = this.arenaRadius - 0.8;
+      const stopLimit = this.arenaRadius - 1.1;
+      if (distCenter > fallLimit) {
         this.startFalling();
         return;
-      } else if (distCenter >= 7.8) {
-        this.mesh.position.x = this.arenaCenter.x + (this.mesh.position.x - this.arenaCenter.x) * (7.5 / distCenter);
-        this.mesh.position.z = this.arenaCenter.z + (this.mesh.position.z - this.arenaCenter.z) * (7.5 / distCenter);
+      } else if (distCenter >= skidLimit) {
+        this.mesh.position.x = this.arenaCenter.x + (this.mesh.position.x - this.arenaCenter.x) * (stopLimit / distCenter);
+        this.mesh.position.z = this.arenaCenter.z + (this.mesh.position.z - this.arenaCenter.z) * (stopLimit / distCenter);
         this.startDizzy();
         return;
       }
@@ -640,7 +645,7 @@ export class BossTalabotTitan {
   updateDizzy(dt, frog) {
     // Si por alguna razón el robot está fuera de la plataforma durante mareo:
     const distCenter = Math.hypot(this.mesh.position.x - this.arenaCenter.x, this.mesh.position.z - this.arenaCenter.z);
-    if (distCenter > 8.8) {
+    if (distCenter > this.arenaRadius + 0.3) {
       this.startFalling();
       return;
     }
@@ -768,11 +773,11 @@ export class BossTalabotTitan {
 
     // Vector de lanzamiento tangencial al giro
     const throwDirAngle = this.spinAngle + Math.PI / 2;
-    const throwPower = 18.0 + (this.spinSpeed / 14.0) * 12.0;
+    const throwPower = 21.0 + (this.spinSpeed / 14.0) * 14.0;
 
     this.throwVelocity.set(
       Math.sin(throwDirAngle) * throwPower,
-      2.5,
+      2.8,
       Math.cos(throwDirAngle) * throwPower
     );
 
@@ -796,7 +801,7 @@ export class BossTalabotTitan {
     for (let mine of this.mines) {
       if (!mine.active) continue;
       const dist = this.mesh.position.distanceTo(mine.position);
-      if (dist < 2.5) {
+      if (dist < 3.1) {
         // ¡IMPACTO DIRECTO CONTRA LA MINA!
         mine.explode();
         this.takeHit(camera);

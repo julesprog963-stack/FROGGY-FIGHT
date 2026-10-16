@@ -9,6 +9,7 @@ export class InputManager {
       jumpReleased: false,
       isJumpHeld: false,
       tonguePressed: false,
+      kickPressed: false,
       cLeft: false,
       cRight: false
     };
@@ -33,8 +34,8 @@ export class InputManager {
       const code = e.code;
       if (code === 'KeyW' || code === 'ArrowUp') this.keys.forward = true;
       if (code === 'KeyS' || code === 'ArrowDown') this.keys.backward = true;
-      if (code === 'KeyA') this.keys.left = true;
-      if (code === 'KeyD') this.keys.right = true;
+      if (code === 'KeyA' || code === 'ArrowLeft') this.keys.left = true;
+      if (code === 'KeyD' || code === 'ArrowRight') this.keys.right = true;
       
       if (code === 'Space') {
         if (document.body.classList.contains('in-dialogue')) {
@@ -49,8 +50,12 @@ export class InputManager {
         if (this.onDialogueAdvance) this.onDialogueAdvance();
       }
 
-      if (code === 'KeyE' || code === 'KeyF') {
+      if (code === 'KeyE') {
         this.keys.tonguePressed = true;
+      }
+
+      if (code === 'KeyF' || code === 'KeyK' || code === 'KeyX' || code === 'ShiftLeft' || code === 'ShiftRight') {
+        this.keys.kickPressed = true;
       }
 
       if (code === 'KeyQ') this.keys.cLeft = true;
@@ -73,8 +78,8 @@ export class InputManager {
       const code = e.code;
       if (code === 'KeyW' || code === 'ArrowUp') this.keys.forward = false;
       if (code === 'KeyS' || code === 'ArrowDown') this.keys.backward = false;
-      if (code === 'KeyA') this.keys.left = false;
-      if (code === 'KeyD') this.keys.right = false;
+      if (code === 'KeyA' || code === 'ArrowLeft') this.keys.left = false;
+      if (code === 'KeyD' || code === 'ArrowRight') this.keys.right = false;
 
       if (code === 'Space') {
         this.keys.jumpReleased = true;
@@ -85,13 +90,16 @@ export class InputManager {
       if (code === 'KeyR') this.keys.cRight = false;
     });
 
-    // Control de ratón para órbita de cámara y disparo de lengua
+    // Control de ratón para órbita de cámara, disparo de lengua y patada trasera
     window.addEventListener('mousedown', (e) => {
       if (!e.target.closest('#canvas-container')) return;
       if (e.button === 0) {
-        // Clic izquierdo: disparar lengua
+        // Clic izquierdo: disparar lengua (o patada contextual si hay un Talabot al lado)
         this.keys.tonguePressed = true;
         if (this.onDialogueAdvance) this.onDialogueAdvance();
+      } else if (e.button === 2) {
+        // Clic derecho: patada trasera directa + rotación de cámara
+        this.keys.kickPressed = true;
       }
       if (e.button === 2 || e.button === 0) {
         this.mouse.isDown = true;
@@ -118,7 +126,7 @@ export class InputManager {
 
   releaseInputs() {
     if (this.keys.isJumpHeld) this.keys.jumpReleased = true;
-    for (const key of ['forward', 'backward', 'left', 'right', 'cLeft', 'cRight', 'jumpPressed', 'isJumpHeld', 'tonguePressed']) {
+    for (const key of ['forward', 'backward', 'left', 'right', 'cLeft', 'cRight', 'jumpPressed', 'isJumpHeld', 'tonguePressed', 'kickPressed']) {
       this.keys[key] = false;
     }
     this.mouse.isDown = false;
@@ -140,6 +148,8 @@ export class InputManager {
           this.keys.isJumpHeld = true;
         } else if (action === 'tongue') {
           this.keys.tonguePressed = true;
+        } else if (action === 'kick') {
+          this.keys.kickPressed = true;
         } else {
           this.keys[action] = true;
         }
@@ -152,7 +162,7 @@ export class InputManager {
         if (action === 'jump') {
           this.keys.isJumpHeld = false;
           this.keys.jumpReleased = true;
-        } else if (action !== 'tongue') {
+        } else if (action !== 'tongue' && action !== 'kick') {
           this.keys[action] = false;
         }
       };
@@ -181,7 +191,7 @@ export class InputManager {
       if (ax1 > deadzone) this.keys.backward = true;
     }
 
-    // Botones A (salto) y X/Gatillo (lengua)
+    // Botones A (salto), X (lengua), B (patada)
     if (gp.buttons[0] && gp.buttons[0].pressed) {
       if (!this.keys.isJumpHeld) this.keys.jumpPressed = true;
       this.keys.isJumpHeld = true;
@@ -193,13 +203,19 @@ export class InputManager {
     if (gp.buttons[2] && gp.buttons[2].pressed) {
       this.keys.tonguePressed = true;
     }
+
+    if (gp.buttons[1] && gp.buttons[1].pressed) {
+      this.keys.kickPressed = true;
+    }
   }
 
   resetOneShots() {
     this.keys.jumpPressed = false;
     this.keys.jumpReleased = false;
     this.keys.tonguePressed = false;
+    this.keys.kickPressed = false;
     this.mouse.deltaX = 0;
     this.mouse.deltaY = 0;
   }
 }
+
